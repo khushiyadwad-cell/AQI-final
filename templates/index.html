@@ -33,7 +33,46 @@
     --accessible-white: #ffffff;
     --accessible-black: #111111;
 }
+/* Responsive container rules */
+* {
+  box-sizing: border-box;
+}
 
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden; /* Prevents horizontal scrolling */
+}
+
+/* Mobile Screen Adaptations */
+@media (max-width: 768px) {
+  /* Main wrapper or container element */
+  .container, #app, main {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px !important;
+    margin: 0 auto !important;
+  }
+
+  /* Convert multi-column layouts to single-column */
+  .row, .grid, .flex-container {
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Responsive media & inputs */
+  img, video, canvas, iframe {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  input, select, textarea, button {
+    width: 100% !important;
+    font-size: 16px !important; /* Prevents iOS auto-zoom on input focus */
+  }
+}
 body {
     font-family: Arial, Helvetica, sans-serif;
     background: linear-gradient(135deg,#effbf8,#f7fffc);
@@ -270,6 +309,7 @@ body {
 }
 
 .aqi-overview-card {
+    /* AQI Gradient Bar */
     background: white;
     border: 1px solid var(--border);
     border-radius: 20px;
@@ -279,6 +319,63 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+}
+
+.aqi-meter-wrapper {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.aqi-meter-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.aqi-slider-track {
+    position: relative;
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(
+        to right, 
+        #42b883 0%,    /* Green: Good */
+        #ffd600 35%,   /* Yellow: Moderate */
+        #ff7e00 55%,   /* Orange: Unhealthy */
+        #ff0000 80%,   /* Red: Severe */
+        #7e0023 100%   /* Dark Red: Hazardous */
+    );
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.aqi-pointer {
+    position: absolute;
+    top: -3px;
+    width: 6px;
+    height: 18px;
+    background-color: var(--dark);
+    border: 2px solid var(--white);
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transform: translateX(-50%);
+    transition: left 0.5s ease-in-out;
+}
+
+/* Mobile Screen Responsiveness */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 20px;
+    }
+    .aqi-overview-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .best-time-box {
+        width: 100%;
+    }
 }
 
 .aqi-overview-card small {
@@ -732,7 +829,22 @@ body.high-contrast .hour-number {
         padding: 18px;
     }
 }
-
+/* AQI & Pollutant Dynamic Text Colors */
+.aqi-color-good {
+    color: #42b883 !important; /* Green */
+}
+.aqi-color-moderate {
+    color: #ffd600 !important; /* Yellow */
+}
+.aqi-color-unhealthy-sensitive {
+    color: #ff7e00 !important; /* Orange */
+}
+.aqi-color-unhealthy {
+    color: #ff0000 !important; /* Red */
+}
+.aqi-color-hazardous {
+    color: #7e0023 !important; /* Dark Red / Purple */
+}
 </style>
 </head>
 
@@ -846,8 +958,8 @@ body.high-contrast .hour-number {
                 class="loc-card"
                 onclick="selectCity('Mumbai')">
 
-                <strong>Mumbai</strong><br>
-                <small>Maharashtra</small>
+                <strong id="mumbaiCity">Mumbai</strong><br>
+                <small class="maharashtraState">Maharashtra</small>
 
             </div>
 
@@ -856,8 +968,8 @@ body.high-contrast .hour-number {
                 class="loc-card"
                 onclick="selectCity('Pune')">
 
-                <strong>Pune</strong><br>
-                <small>Maharashtra</small>
+                <strong id="puneCity">Pune</strong><br>
+                <small class="maharashtraState">Maharashtra</small>
 
             </div>
 
@@ -957,6 +1069,18 @@ body.high-contrast .hour-number {
 
                 Loading...
 
+            </div>
+
+            <!-- AQI Gradient Scale Bar -->
+            <div class="aqi-meter-wrapper">
+                <div class="aqi-meter-labels">
+                    <span>0 Good</span>
+                    <span>150 Mod</span>
+                    <span>300+ Bad</span>
+                </div>
+                <div class="aqi-slider-track">
+                    <div id="aqi-pointer" class="aqi-pointer" style="left: 0%;"></div>
+                </div>
             </div>
 
         </div>
@@ -1108,6 +1232,11 @@ const translations = {
         heroSubtitle: "Simple, reliable air quality information for everyone.",
         cityLabel: "Enter a city or area",
         placeholder: "Type a city, e.g. Mumbai",
+
+        mumbaiCity: "Mumbai",
+        puneCity: "Pune",
+        maharashtraState: "Maharashtra",
+
         locationsTitle: "Your Locations",
         getAQI: "Get Air Quality →",
 
@@ -1177,6 +1306,11 @@ const translations = {
         heroSubtitle: "सभी के लिए सरल और विश्वसनीय वायु गुणवत्ता जानकारी।",
         cityLabel: "शहर या क्षेत्र दर्ज करें",
         placeholder: "शहर लिखें, जैसे मुंबई",
+
+        mumbaiCity: "मुंबई",
+        puneCity: "पुणे",
+        maharashtraState: "महाराष्ट्र",
+
         locationsTitle: "आपके स्थान",
         getAQI: "वायु गुणवत्ता देखें →",
 
@@ -1246,6 +1380,11 @@ const translations = {
         heroSubtitle: "प्रत्येकासाठी सोपी आणि विश्वासार्ह हवेच्या गुणवत्तेची माहिती.",
         cityLabel: "शहर किंवा परिसराचे नाव लिहा",
         placeholder: "शहर लिहा, उदा. मुंबई",
+
+        mumbaiCity: "मुंबई",
+        puneCity: "पुणे",
+        maharashtraState: "महाराष्ट्र",
+
         locationsTitle: "तुमची ठिकाणे",
         getAQI: "हवेची गुणवत्ता पहा →",
 
@@ -1372,6 +1511,18 @@ function updateInterfaceText() {
     document.getElementById("locationsTitle").innerText =
         t("locationsTitle");
 
+    // Translate location cards
+    document.getElementById("mumbaiCity").innerText =
+        t("mumbaiCity");
+
+    document.getElementById("puneCity").innerText =
+        t("puneCity");
+
+    document.querySelectorAll(".maharashtraState").forEach(
+        element => {
+            element.innerText = t("maharashtraState");
+        }
+    );
     document.getElementById("getAQIButton").innerText =
         t("getAQI");
 
@@ -1468,8 +1619,36 @@ async function searchCities(query) {
            belonging to India.
         */
 
+        let searchQuery = query;
+
+        if (currentLanguage === "mr") {
+            const marathiCityMap = {
+                "मुंबई": "Mumbai",
+                "पुणे": "Pune",
+                "ठाणे": "Thane",
+                "नागपूर": "Nagpur",
+                "नाशिक": "Nashik",
+                "छत्रपती संभाजीनगर": "Chhatrapati Sambhajinagar",
+                "औरंगाबाद": "Aurangabad",
+                "कोल्हापूर": "Kolhapur",
+                "सोलापूर": "Solapur",
+                "अमरावती": "Amravati",
+                "सातारा": "Satara",
+                "रत्नागिरी": "Ratnagiri",
+                "अकोला": "Akola",
+                "नांदेड": "Nanded",
+                "लातूर": "Latur",
+                "जळगाव": "Jalgaon"
+            };
+
+            searchQuery = marathiCityMap[query.trim()] || query;
+        }
+
+        console.log("ORIGINAL QUERY:", query);
+        console.log("SEARCH QUERY:", searchQuery);
+
         const url =
-            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json&countryCode=IN`;
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=10&language=en&format=json&countryCode=IN`;
 
 
         const response =
@@ -1499,6 +1678,10 @@ async function searchCities(query) {
            only show results whose country code
            is explicitly IN.
         */
+
+        console.log("SEARCH QUERY:", selectedCity);
+        console.log("LANGUAGE:", currentLanguage);
+        console.log("GEOCODING RESULTS:", data.results);
 
         const indianResults =
             data.results.filter(
@@ -1621,9 +1804,9 @@ async function fetchAQIData() {
     try {
 
         const response =
-            await fetch(
-                `/api/air-quality?city=${encodeURIComponent(city)}`
-            );
+        await fetch(
+        `/api/air-quality?city=${encodeURIComponent(selectedCity)}&language=${encodeURIComponent(currentLanguage)}`
+        );
 
 
         if (!response.ok) {
@@ -1643,8 +1826,15 @@ async function fetchAQIData() {
             data;
 
 
+
         renderAQIData(data);
 
+        // Update the scale bar marker automatically using the fetched AQI value
+        const aqiValue = getValue(data, ['aqi', 'AQI', 'us_aqi', 'air_quality']);
+        if (aqiValue !== null) {
+            updateAQIMeter(aqiValue);
+      applyAQIFontColors(aqiValue, ['.aqi-score', '#aqiStatus', '.pollutant-value']);
+        }
 
     } catch (error) {
 
@@ -2008,18 +2198,37 @@ function renderAQIData(data) {
 
 function getPollutantValue(data, pollutantName) {
 
-    if (!data.pollutants ||
-        !Array.isArray(data.pollutants)) {
+    if (!data || !data.pollutants) {
         return null;
     }
 
-    const pollutant =
-        data.pollutants.find(
-            p => p.name === pollutantName
-        );
+    const pollutantMap = {
+        "PM2.5": "pm2_5",
+        "PM10": "pm10",
+        "O₃": "ozone",
+        "O3": "ozone",
+        "NO₂": "nitrogen_dioxide",
+        "NO2": "nitrogen_dioxide",
+        "SO₂": "sulfur_dioxide",
+        "SO2": "sulfur_dioxide",
+        "CO": "carbon_monoxide"
+    };
 
-    return pollutant
-        ? Number(pollutant.value)
+    const apiKey = pollutantMap[pollutantName];
+
+    if (!apiKey) {
+        console.log("NO API KEY FOR:", pollutantName);
+        return null;
+    }
+
+    const value = data.pollutants[apiKey];
+
+    console.log("LOOKING FOR:", pollutantName);
+    console.log("API KEY:", apiKey);
+    console.log("VALUE:", value);
+
+    return value !== undefined && value !== null
+        ? Number(value)
         : null;
 }
 
@@ -2032,17 +2241,17 @@ function renderMainPollutant(data) {
     const mainPollutant = data.mainPollutant;
     const contribution = data.mainPollutantContribution;
 
+    // Main pollutant name
     document.getElementById("mainPollutant").innerText =
         mainPollutant || "--";
 
+    // Contribution percentage
     document.getElementById("contributionVal").innerText =
         contribution != null
             ? contribution + "%"
             : "--";
 
-    /*
-       Show why the main pollutant matters.
-    */
+    // Convert pollutant name to internal type
     const pollutantTypeMap = {
         "PM2.5": "pm25",
         "PM10": "pm10",
@@ -2054,6 +2263,12 @@ function renderMainPollutant(data) {
 
     const type = pollutantTypeMap[mainPollutant];
 
+    console.log("MAIN POLLUTANT:", mainPollutant);
+    console.log("POLLUTANT TYPE:", type);
+    console.log("POLLUTANT VALUE:", getPollutantValue(data, mainPollutant));
+    console.log("ADVICE:", getPollutantAdvice(type, getPollutantValue(data, mainPollutant)));
+
+    // Show why the main pollutant matters
     const effects =
         document.getElementById("pollutantEffects");
 
@@ -2061,21 +2276,29 @@ function renderMainPollutant(data) {
 
     if (type) {
 
-        const li =
-            document.createElement("li");
+        const li = document.createElement("li");
 
         li.innerText =
             getMainPollutantDescription(type);
 
         effects.appendChild(li);
+    }
 
-        document.getElementById(
-            "mainPollutantAdvice"
-        ).innerText =
+    // Show advice for the main pollutant
+    const advice =
+        document.getElementById("mainPollutantAdvice");
+
+    if (type) {
+
+        advice.innerText =
             getPollutantAdvice(
                 type,
                 getPollutantValue(data, mainPollutant)
             );
+
+    } else {
+
+        advice.innerText = "";
     }
 }
 
@@ -2537,6 +2760,50 @@ function toggleContrast() {
 
 
 /* =========================================================
+   READ ALOUD — VOICE LOADING & MATCHING
+========================================================= */
+
+let availableVoices = [];
+
+function loadVoices() {
+    if (!("speechSynthesis" in window)) return;
+    availableVoices = window.speechSynthesis.getVoices();
+}
+
+if ("speechSynthesis" in window) {
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function pickVoice(targetLang) {
+    if (!availableVoices.length) return null;
+
+    const target = targetLang.toLowerCase();
+    const prefix = target.split("-")[0];
+
+    // 1. Exact language match
+    let match = availableVoices.find(v =>
+        v.lang &&
+        v.lang.toLowerCase() === target
+    );
+
+    if (match) return match;
+
+    // 2. Same language, different region
+    match = availableVoices.find(v =>
+        v.lang &&
+        v.lang.toLowerCase().split("-")[0] === prefix
+    );
+
+    if (match) return match;
+
+    // No suitable voice found.
+    // Let SpeechSynthesis use the browser's default
+    // voice for the requested language.
+    return null;
+}
+
+/* =========================================================
    READ ALOUD — START / STOP TOGGLE
 ========================================================= */
 
@@ -2574,6 +2841,7 @@ function startReadAloud() {
     }
 
 
+    loadVoices();
     window.speechSynthesis.cancel();
 
 
@@ -2652,25 +2920,24 @@ function startReadAloud() {
         );
 
 
+    let langTag;
+
     if (currentLanguage === "hi") {
-
-        utterance.lang =
-            "hi-IN";
-
+        langTag = "hi-IN";
+    } else if (currentLanguage === "mr") {
+        langTag = "mr-IN";
+    } else {
+        langTag = "en-IN";
     }
 
-    else if (currentLanguage === "mr") {
+    utterance.lang = langTag;
 
-        utterance.lang =
-            "mr-IN";
+    loadVoices();
 
-    }
+    const matchedVoice = pickVoice(langTag);
 
-    else {
-
-        utterance.lang =
-            "en-IN";
-
+    if (matchedVoice) {
+        utterance.voice = matchedVoice;
     }
 
 
@@ -2772,7 +3039,40 @@ document.addEventListener(
     }
 );
 
+function updateAQIMeter(aqiValue) {
+    const maxAQI = 300; 
+    let clampedAQI = Math.max(0, Math.min(aqiValue, maxAQI));
+    let percentage = (clampedAQI / maxAQI) * 100;
+    
+    const pointer = document.getElementById('aqi-pointer');
+    if (pointer) {
+        pointer.style.left = percentage + '%';
+    }
+}
+// Function to get the appropriate color class based on numerical AQI
+function getAQIColorClass(value) {
+    if (value <= 50) return 'aqi-color-good';
+    if (value <= 100) return 'aqi-color-moderate';
+    if (value <= 150) return 'aqi-color-unhealthy-sensitive';
+    if (value <= 200) return 'aqi-color-unhealthy';
+    return 'aqi-color-hazardous';
+}
 
+// Function to apply colors to elements dynamically
+function applyAQIFontColors(aqiValue, elementIdsOrClasses = []) {
+    const colorClass = getAQIColorClass(aqiValue);
+    const colorClasses = ['aqi-color-good', 'aqi-color-moderate', 'aqi-color-unhealthy-sensitive', 'aqi-color-unhealthy', 'aqi-color-hazardous'];
+
+    elementIdsOrClasses.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+            // Remove previous color classes
+            el.classList.remove(...colorClasses);
+            // Add new health-based color class
+            el.classList.add(colorClass);
+        });
+    });
+}
 /* =========================================================
    INITIALISE
 ========================================================= */
