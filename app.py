@@ -1,8 +1,15 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, request, send_from_directory
 import requests
 from datetime import datetime, timezone, timedelta
 
 app = Flask(__name__)
+
+OPEN_METEO_GEOCODING = "https://geocoding-api.open-meteo.com/v1/search"
+OPEN_METEO_AIR_QUALITY = "https://air-quality-api.open-meteo.com/v1/air-quality"
+OPEN_METEO_WEATHER = "https://api.open-meteo.com/v1/forecast"
+
+# These are used only for the "Air quality elsewhere right now" cards.
+FEATURED_CITIES = ["Mumbai", "Pune", "Nagpur"]
 
 
 # =========================================================
@@ -11,15 +18,14 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return send_from_directory("templates", "index.html")
 
 
 # =========================================================
-# POLLUTANT STATUS
+# HELPERS
 # =========================================================
 
 def pollutant_status(pollutant, value):
-
     if value is None:
         return "Unavailable"
 
@@ -88,492 +94,496 @@ def pollutant_status(pollutant, value):
     return "Unknown"
 
 
-# =========================================================
-# AIR QUALITY API
-# =========================================================
+def overall_aqi_status(aqi):
+    if aqi is None:
+        return "Unavailable"
 
-@app.route("/api/air-quality")
-def air_quality():
+    if aqi <= 50:
+        return "Good"
+    elif aqi <= 100:
+        return "Moderate"
+    elif aqi <= 150:
+        return "Unhealthy for Sensitive Groups"
+    elif aqi <= 200:
+        return "Unhealthy"
+    elif aqi <= 300:
+        return "Very Unhealthy"
+    return "Hazardous"
 
-    city = request.args.get("city")
-    language = request.args.get("language", "en")
 
-    if not city:
-        return jsonify({
-            "error": "City is required"
-        }), 400
+def format_time(time_string):
+    hour, minute = map(int, time_string.split(":"))
 
-    city_name = city.split(",")[0].strip()
+    suffix = "AM" if hour < 12 else "PM"
+    display_hour = hour % 12
 
-    marathi_city_map = {
-        "मुंबई": "Mumbai",
-        "पुणे": "Pune",
-        "ठाणे": "Thane",
-        "नागपूर": "Nagpur",
-        "नाशिक": "Nashik",
-        "छत्रपती संभाजीनगर": "Chhatrapati Sambhajinagar",
-        "कोल्हापूर": "Kolhapur",
-        "सोलापूर": "Solapur",
-        "अमरावती": "Amravati",
-        "सातारा": "Satara",
-        "रत्नागिरी": "Ratnagiri",
-        "अकोला": "Akola",
-        "नांदेड": "Nanded",
-        "लातूर": "Latur",
-        "जळगाव": "Jalgaon"
-    }
+    if display_hour == 0:
+        display_hour = 12
 
-    if language == "mr":
-        city_name = marathi_city_map.get(city_name, city_name)
+    return f"{display_hour} {suffix}"
 
-    # =====================================================
-    # STEP 1 — GEOCODING
-    # =====================================================
 
-    geocoding_url = (
-        "https://geocoding-api.open-meteo.com/v1/search"
-    )
-
-    geocoding_params = {
-        "name": city_name,
-        "count": 1,
-        "language": language,
-        "format": "json",
-        "countryCode": "IN"
-    }
+def find_current_index(times, utc_offset_seconds):
+    """
+    Open-Meteo returns local times when timezone=auto is used.
+    Match the current local hour as closely as possible.
+    """
+    if not times:
+        return 0
 
     try:
-
-        geocoding_response = requests.get(
-            geocoding_url,
-            params=geocoding_params,
-            timeout=10
+        local_now = (
+            datetime.now(timezone.utc)
+            + timedelta(seconds=utc_offset_seconds or 0)
         )
+        current_hour = local_now.strftime("%Y-%m-%dT%H:00")
 
-        geocoding_response.raise_for_status()
+        if current_hour in times:
+            return times.index(current_hour)
 
-        geocoding_data = geocoding_response.json()
+        # If the exact hour is absent, choose the nearest available hour.
+        target = datetime.strptime(current_hour, "%Y-%m-%dT%H:%M")
+        parsed = [
+            datetime.strptime(t[:16], "%Y-%m-%dT%H:%M")
+            for t in times
+        ]
+        return min(range(len(parsed)), key=lambda i: abs(parsed[i] - target))
 
-    except requests.RequestException as error:
-
-        return jsonify({
-            "error": "Unable to contact location service",
-            "details": str(error)
-        }), 502
-
-
-    if (
-        "results" not in geocoding_data
-        or not geocoding_data["results"]
-    ):
-
-        return jsonify({
-            "error": "Indian city not found"
-        }), 404
+    except (ValueError, TypeError):
+        return 0
 
 
-    location = geocoding_data["results"][0]
+def calculate_best_time(times, aqi):
+    if not times or not aqi:
+        return "Unavailable"
 
-    latitude = location["latitude"]
-    longitude = location["longitude"]
+    best_start = None
+    best_average_aqi = float("inf")
 
-    city_result = location.get(
-        "name",
-        city_name
+    # Six-hour window.
+    for i in range(max(0, len(aqi) - 5)):
+        window = aqi[i:i + 6]
+
+        if len(window) < 6 or any(value is None for value in window):
+            continue
+
+        average_aqi = sum(window) / len(window)
+
+        if average_aqi < best_average_aqi:
+            best_average_aqi = average_aqi
+            best_start = i
+
+    if best_start is None:
+        return "Unavailable"
+
+    try:
+        start_time = times[best_start][11:16]
+        end_time = times[best_start + 5][11:16]
+
+        return f"{format_time(start_time)} – {format_time(end_time)}"
+    except (IndexError, ValueError):
+        return "Unavailable"
+
+
+def get_geocoded_city(city_name):
+    params = {
+        "name": city_name,
+        "count": 1,
+        "language": "en",
+        "format": "json",
+        "countryCode": "IN",
+    }
+
+    response = requests.get(
+        OPEN_METEO_GEOCODING,
+        params=params,
+        timeout=10,
     )
+    response.raise_for_status()
 
-    state = location.get(
-        "admin1",
-        ""
-    )
+    data = response.json()
+    results = data.get("results") or []
+
+    if not results:
+        return None
+
+    return results[0]
 
 
-    # =====================================================
-    # STEP 2 — AIR QUALITY DATA
-    # =====================================================
-
-    air_quality_url = (
-        "https://air-quality-api.open-meteo.com/v1/air-quality"
-    )
-
-    air_quality_params = {
-
+def get_air_quality(latitude, longitude):
+    """
+    Get today's hourly air-quality data.
+    """
+    params = {
         "latitude": latitude,
-
         "longitude": longitude,
-
-        "hourly": [
+        "hourly": ",".join([
             "pm10",
             "pm2_5",
             "carbon_monoxide",
             "nitrogen_dioxide",
             "sulphur_dioxide",
             "ozone",
-
             "us_aqi",
-
             "us_aqi_pm2_5",
             "us_aqi_pm10",
             "us_aqi_nitrogen_dioxide",
             "us_aqi_carbon_monoxide",
             "us_aqi_ozone",
-            "us_aqi_sulphur_dioxide"
-        ],
-
+            "us_aqi_sulphur_dioxide",
+        ]),
         "timezone": "auto",
-
-        "forecast_days": 1
+        "forecast_days": 1,
     }
 
+    response = requests.get(
+        OPEN_METEO_AIR_QUALITY,
+        params=params,
+        timeout=10,
+    )
+    response.raise_for_status()
+
+    return response.json()
+
+
+def get_current_wind(latitude, longitude):
+    """
+    Current wind data required by the new frontend.
+    """
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "current": "wind_speed_10m,wind_direction_10m",
+        "wind_speed_unit": "kmh",
+        "timezone": "auto",
+    }
+
+    response = requests.get(
+        OPEN_METEO_WEATHER,
+        params=params,
+        timeout=10,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    current = data.get("current") or {}
+
+    return (
+        current.get("wind_speed_10m"),
+        current.get("wind_direction_10m"),
+    )
+
+
+def extract_current_values(air_quality_data):
+    hourly = air_quality_data.get("hourly") or {}
+    times = hourly.get("time") or []
+
+    current_index = find_current_index(
+        times,
+        air_quality_data.get("utc_offset_seconds", 0),
+    )
+
+    def value(name):
+        values = hourly.get(name) or []
+        if current_index >= len(values):
+            return None
+        return values[current_index]
+
+    return {
+        "times": times,
+        "index": current_index,
+        "aqi": value("us_aqi"),
+        "pm2_5": value("pm2_5"),
+        "pm10": value("pm10"),
+        "carbon_monoxide": value("carbon_monoxide"),
+        "nitrogen_dioxide": value("nitrogen_dioxide"),
+        "sulphur_dioxide": value("sulphur_dioxide"),
+        "ozone": value("ozone"),
+        "aqi_pm25": value("us_aqi_pm2_5"),
+        "aqi_pm10": value("us_aqi_pm10"),
+        "aqi_no2": value("us_aqi_nitrogen_dioxide"),
+        "aqi_co": value("us_aqi_carbon_monoxide"),
+        "aqi_ozone": value("us_aqi_ozone"),
+        "aqi_so2": value("us_aqi_sulphur_dioxide"),
+    }
+
+
+def build_location_summary(city_name):
+    """
+    Build the compact object consumed by renderFeaturedLocations().
+    If one featured city fails, simply skip it rather than breaking the
+    main city's report.
+    """
+    try:
+        location = get_geocoded_city(city_name)
+
+        if not location:
+            return None
+
+        latitude = location.get("latitude")
+        longitude = location.get("longitude")
+
+        if latitude is None or longitude is None:
+            return None
+
+        air_data = get_air_quality(latitude, longitude)
+        values = extract_current_values(air_data)
+
+        aqi = values["aqi"]
+        status = overall_aqi_status(aqi)
+
+        if status == "Good":
+            message = "Air quality is healthy. Outdoor plans are suitable for most people."
+        elif status == "Moderate":
+            message = "Air quality is moderate. Sensitive people should reduce prolonged outdoor exertion."
+        else:
+            message = "Air quality is unhealthy. Reduce strenuous outdoor activity and consider a well-fitting mask."
+
+        return {
+            "city": location.get("name", city_name),
+            "state": location.get("admin1", ""),
+            "aqi": aqi,
+            "status": status,
+            "message": message,
+        }
+
+    except (requests.RequestException, KeyError, TypeError, ValueError):
+        return None
+
+
+# =========================================================
+# AIR QUALITY API
+# =========================================================
+
+@app.route("/api/air-quality")
+def air_quality():
+    print("AIR QUALITY ROUTE HIT")
+    city = request.args.get("city", "").strip()
+
+    if not city:
+        return jsonify({
+            "error": "City is required"
+        }), 400
+
+    # The frontend sends the verified Open-Meteo city name.
+    # Strip anything after a comma for inputs such as "Mumbai, Maharashtra".
+    city_name = city.split(",")[0].strip()
+
+    # ---------------------------------------------------------
+    # STEP 1 — GEOCODING
+    # ---------------------------------------------------------
 
     try:
-
-        air_quality_response = requests.get(
-            air_quality_url,
-            params=air_quality_params,
-            timeout=10
-        )
-
-        air_quality_response.raise_for_status()
-
-        air_quality_data = (
-            air_quality_response.json()
-        )
+        location = get_geocoded_city(city_name)
 
     except requests.RequestException as error:
-
         return jsonify({
-            "error": "Unable to contact air quality service",
-            "details": str(error)
+            "error": "Unable to contact location service",
+            "details": str(error),
         }), 502
 
+    if not location:
+        return jsonify({
+            "error": "Indian city not found"
+        }), 404
 
-    hourly = air_quality_data["hourly"]
+    latitude = location.get("latitude")
+    longitude = location.get("longitude")
 
-    times = hourly["time"]
+    if latitude is None or longitude is None:
+        return jsonify({
+            "error": "Location coordinates unavailable"
+        }), 502
 
-    pm25 = hourly["pm2_5"]
-    pm10 = hourly["pm10"]
-    co = hourly["carbon_monoxide"]
-    no2 = hourly["nitrogen_dioxide"]
-    so2 = hourly["sulphur_dioxide"]
-    ozone = hourly["ozone"]
+    city_result = location.get("name", city_name)
+    state = location.get("admin1", "")
 
-    aqi = hourly["us_aqi"]
+    # ---------------------------------------------------------
+    # STEP 2 — WIND DATA
+    # ---------------------------------------------------------
 
-    aqi_pm25 = hourly["us_aqi_pm2_5"]
-    aqi_pm10 = hourly["us_aqi_pm10"]
-    aqi_no2 = hourly["us_aqi_nitrogen_dioxide"]
-    aqi_co = hourly["us_aqi_carbon_monoxide"]
-    aqi_ozone = hourly["us_aqi_ozone"]
-    aqi_so2 = hourly["us_aqi_sulphur_dioxide"]
-
-
-    # =====================================================
-    # STEP 3 — FIND CURRENT HOUR
-    # =====================================================
-
-    current_index = 0
-
-    timezone_offset = air_quality_data.get(
-        "utc_offset_seconds",
-        0
-    )
-
-    local_now = (
-        datetime.now(timezone.utc)
-        + timedelta(seconds=timezone_offset)
-    )
-
-    current_hour = local_now.strftime(
-        "%Y-%m-%dT%H:00"
-    )
-
-    if current_hour in times:
-
-        current_index = times.index(
-            current_hour
+    try:
+        current_wind_speed, current_wind_direction = get_current_wind(
+            latitude,
+            longitude,
         )
+    except (requests.RequestException, KeyError, TypeError, ValueError):
+        # Wind is supplementary. Do not break the whole AQI report if
+        # the weather endpoint is temporarily unavailable.
+        current_wind_speed = None
+        current_wind_direction = None
 
+    # ---------------------------------------------------------
+    # STEP 3 — AIR QUALITY DATA
+    # ---------------------------------------------------------
 
-    # =====================================================
-    # STEP 4 — CURRENT VALUES
-    # =====================================================
+    try:
+        air_quality_data = get_air_quality(latitude, longitude)
 
-    current_aqi = aqi[current_index]
+    except requests.RequestException as error:
+        return jsonify({
+            "error": "Unable to contact air quality service",
+            "details": str(error),
+        }), 502
 
-    current_pm25 = pm25[current_index]
-    current_pm10 = pm10[current_index]
-    current_co = co[current_index]
-    current_no2 = no2[current_index]
-    current_so2 = so2[current_index]
-    current_ozone = ozone[current_index]
+    try:
+        current = extract_current_values(air_quality_data)
 
+        times = current["times"]
+        current_aqi = current["aqi"]
 
-    current_aqi_pm25 = aqi_pm25[current_index]
-    current_aqi_pm10 = aqi_pm10[current_index]
-    current_aqi_no2 = aqi_no2[current_index]
-    current_aqi_co = aqi_co[current_index]
-    current_aqi_ozone = aqi_ozone[current_index]
-    current_aqi_so2 = aqi_so2[current_index]
+        pm25 = current["pm2_5"]
+        pm10 = current["pm10"]
+        co = current["carbon_monoxide"]
+        no2 = current["nitrogen_dioxide"]
+        so2 = current["sulphur_dioxide"]
+        ozone = current["ozone"]
 
+        aqi_pm25 = current["aqi_pm25"]
+        aqi_pm10 = current["aqi_pm10"]
+        aqi_no2 = current["aqi_no2"]
+        aqi_co = current["aqi_co"]
+        aqi_ozone = current["aqi_ozone"]
+        aqi_so2 = current["aqi_so2"]
 
-    # =====================================================
-    # STEP 5 — OVERALL AQI STATUS
-    # =====================================================
+    except (KeyError, TypeError, IndexError):
+        return jsonify({
+            "error": "Unexpected air quality response from Open-Meteo"
+        }), 502
 
-    if current_aqi <= 50:
+    # ---------------------------------------------------------
+    # STEP 4 — OVERALL AQI STATUS
+    # ---------------------------------------------------------
 
-        status = "Good"
+    status = overall_aqi_status(current_aqi)
 
-    elif current_aqi <= 100:
-
-        status = "Moderate"
-
-    elif current_aqi <= 150:
-
-        status = "Unhealthy for Sensitive Groups"
-
-    elif current_aqi <= 200:
-
-        status = "Unhealthy"
-
-    elif current_aqi <= 300:
-
-        status = "Very Unhealthy"
-
-    else:
-
-        status = "Hazardous"
-
-
-    # =====================================================
-    # STEP 6 — MAIN POLLUTANT
-    # =====================================================
+    # ---------------------------------------------------------
+    # STEP 5 — MAIN POLLUTANT
+    # ---------------------------------------------------------
 
     pollutant_aqi_values = {
-
-        "PM2.5": current_aqi_pm25,
-
-        "PM10": current_aqi_pm10,
-
-        "NO2": current_aqi_no2,
-
-        "SO2": current_aqi_so2,
-
-        "O3": current_aqi_ozone,
-
-        "CO": current_aqi_co
+        "PM2.5": aqi_pm25,
+        "PM10": aqi_pm10,
+        "NO2": aqi_no2,
+        "SO2": aqi_so2,
+        "O3": aqi_ozone,
+        "CO": aqi_co,
     }
-
 
     valid_pollutant_aqi = {
-
         pollutant: value
-
-        for pollutant, value
-        in pollutant_aqi_values.items()
-
+        for pollutant, value in pollutant_aqi_values.items()
         if value is not None
     }
 
-
     if valid_pollutant_aqi:
-
         main_pollutant = max(
             valid_pollutant_aqi,
-            key=valid_pollutant_aqi.get
+            key=valid_pollutant_aqi.get,
         )
-
-        main_pollutant_aqi = (
-            valid_pollutant_aqi[main_pollutant]
-        )
-
+        main_pollutant_aqi = valid_pollutant_aqi[main_pollutant]
     else:
-
         main_pollutant = None
-
         main_pollutant_aqi = None
 
+    # ---------------------------------------------------------
+    # STEP 6 — MAIN POLLUTANT CONTRIBUTION
+    # ---------------------------------------------------------
 
-    # =====================================================
-    # STEP 7 — MAIN POLLUTANT CONTRIBUTION
-    # =====================================================
+    total_pollutant_aqi = sum(valid_pollutant_aqi.values())
 
-    total_pollutant_aqi = sum(
-        value
-        for value in valid_pollutant_aqi.values()
-        if value is not None
-    )
-
-
-    if (
-        main_pollutant_aqi is not None
-        and total_pollutant_aqi > 0
-    ):
-
+    if main_pollutant_aqi is not None and total_pollutant_aqi > 0:
         main_pollutant_contribution = round(
-            (
-                main_pollutant_aqi
-                / total_pollutant_aqi
-            ) * 100
+            (main_pollutant_aqi / total_pollutant_aqi) * 100
         )
-
     else:
-
         main_pollutant_contribution = 0
 
+    # ---------------------------------------------------------
+    # STEP 7 — BEST TIME TO GO OUT
+    # ---------------------------------------------------------
 
-    # =====================================================
-    # STEP 8 — BEST TIME TO GO OUT
-    # =====================================================
+    hourly_aqi = air_quality_data.get("hourly", {}).get("us_aqi") or []
+    best_time = calculate_best_time(times, hourly_aqi)
 
-    def format_time(time_string):
+    # ---------------------------------------------------------
+    # STEP 8 — FEATURED LOCATIONS
+    # ---------------------------------------------------------
+    #
+    # The new HTML explicitly looks for:
+    #   data.featured_locations
+    # or
+    #   data.nearby_locations
+    #
+    # Supplying featured_locations keeps that section live instead of
+    # leaving the three loading cards on screen.
 
-        hour, minute = map(
-            int,
-            time_string.split(":")
-        )
+    featured_locations = []
 
-        suffix = (
-            "AM"
-            if hour < 12
-            else "PM"
-        )
-
-        display_hour = hour % 12
-
-        if display_hour == 0:
-            display_hour = 12
-
-        return f"{display_hour} {suffix}"
-
-
-    best_start = None
-    best_average_aqi = float("inf")
-
-
-    for i in range(
-        len(aqi) - 5
-    ):
-
-        window = aqi[i:i + 6]
-
-        if any(
-            value is None
-            for value in window
-        ):
+    for featured_city in FEATURED_CITIES:
+        # Don't waste a second API request for the city already being viewed.
+        if featured_city.lower() == city_result.lower():
             continue
 
-        average_aqi = (
-            sum(window)
-            / len(window)
-        )
+        summary = build_location_summary(featured_city)
 
-        if (
-            average_aqi
-            < best_average_aqi
-        ):
+        if summary:
+            featured_locations.append(summary)
 
-            best_average_aqi = (
-                average_aqi
-            )
+        if len(featured_locations) >= 3:
+            break
 
-            best_start = i
-
-
-    if best_start is not None:
-
-        start_time = (
-            times[best_start][11:16]
-        )
-
-        end_time = (
-            times[best_start + 5][11:16]
-        )
-
-        best_time = (
-            f"{format_time(start_time)} – "
-            f"{format_time(end_time)}"
-        )
-
-    else:
-
-        best_time = "Unavailable"
-
-
-    # =====================================================
+    # ---------------------------------------------------------
     # STEP 9 — RETURN DATA FOR NEW FRONTEND
-    # =====================================================
+    # ---------------------------------------------------------
 
     return jsonify({
-
         "city": city_result,
-
         "state": state,
-
         "location": city_result,
 
+        "latitude": latitude,
+        "longitude": longitude,
+
         "aqi": current_aqi,
-
         "status": status,
-
         "best_time": best_time,
 
         "mainPollutant": main_pollutant,
+        "mainPollutantContribution": main_pollutant_contribution,
 
-        "mainPollutantContribution":
-            main_pollutant_contribution,
+        # Current pollutant values
+        "pm2_5": pm25,
+        "pm10": pm10,
+        "carbon_monoxide": co,
+        "nitrogen_dioxide": no2,
+        "sulphur_dioxide": so2,
+        "ozone": ozone,
 
-
-        # -----------------------------------------------
-        # CURRENT POLLUTANT VALUES
-        # -----------------------------------------------
-
-        "pm2_5": current_pm25,
-
-        "pm10": current_pm10,
-
-        "carbon_monoxide": current_co,
-
-        "nitrogen_dioxide": current_no2,
-
-        "sulphur_dioxide": current_so2,
-
-        "ozone": current_ozone,
-
-
-        # -----------------------------------------------
-        # ALSO KEEP POLLUTANT OBJECT
-        # -----------------------------------------------
-
+        # Keep the pollutant object for the frontend's flexible
+        # getValue() lookup.
         "pollutants": {
-
-            "pm2_5": current_pm25,
-
-            "pm10": current_pm10,
-
-            "carbon_monoxide": current_co,
-
-            "nitrogen_dioxide": current_no2,
-
-            "sulphur_dioxide": current_so2,
-
-            "ozone": current_ozone
+            "pm2_5": pm25,
+            "pm10": pm10,
+            "carbon_monoxide": co,
+            "nitrogen_dioxide": no2,
+            "sulphur_dioxide": so2,
+            "ozone": ozone,
         },
 
-
-        # -----------------------------------------------
-        # HOURLY AQI
-        # -----------------------------------------------
-
+        # Hourly AQI expected by renderAirData()
         "hourly": {
-
             "time": times,
+            "aqi": hourly_aqi,
+            "us_aqi": hourly_aqi,
+        },
 
-            "aqi": aqi
-        }
+        # Current wind data expected by the new frontend
+        "wind_speed": current_wind_speed,
+        "wind_direction": current_wind_direction,
 
+        # New homepage location cards
+        "featured_locations": featured_locations,
     })
 
 
@@ -582,9 +592,8 @@ def air_quality():
 # =========================================================
 
 if __name__ == "__main__":
-
     app.run(
         host="0.0.0.0",
         port=5000,
-        debug=True
+        debug=True,
     )
