@@ -3,3237 +3,693 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>AirAware - Air Quality Dashboard</title>
+<title>AirAware</title>
 
 <style>
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-:root {
-    --turquoise: #19b6a5;
-    --turquoise-dark: #087f75;
-    --green: #42b883;
-    --green-light: #e7f8f2;
-    --mint: #f1fcf8;
-    --dark: #163a38;
-    --text: #35514e;
-    --muted: #718582;
-    --white: #ffffff;
-    --border: #dcefeb;
-    --shadow: 0 10px 30px rgba(20,110,100,0.10);
-
-    /* Accessibility palette */
-    --accessible-blue: #0057b8;
-    --accessible-yellow: #ffd600;
-    --accessible-white: #ffffff;
-    --accessible-black: #111111;
-}
-/* Responsive container rules */
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden; /* Prevents horizontal scrolling */
-}
-
-/* Mobile Screen Adaptations */
-@media (max-width: 768px) {
-  /* Main wrapper or container element */
-  .container, #app, main {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 16px !important;
-    margin: 0 auto !important;
-  }
-
-  /* Convert multi-column layouts to single-column */
-  .row, .grid, .flex-container {
-    flex-direction: column !important;
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Responsive media & inputs */
-  img, video, canvas, iframe {
-    max-width: 100% !important;
-    height: auto !important;
-  }
-
-  input, select, textarea, button {
-    width: 100% !important;
-    font-size: 16px !important; /* Prevents iOS auto-zoom on input focus */
-  }
-}
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: linear-gradient(135deg,#effbf8,#f7fffc);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    transition: all 0.3s ease;
-}
-
-
-/* =========================================================
-   SIDEBAR
-========================================================= */
-
-.sidebar {
-    width: 330px;
-    min-height: 100vh;
-    background: linear-gradient(180deg,#0e9187,#08776e);
-    color: white;
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-}
-
-.top-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 45px;
-}
-
-.badge-select {
-    background: rgba(255,255,255,0.16);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.4);
-    border-radius: 20px;
-    padding: 9px 14px;
-    outline: none;
-    cursor: pointer;
-}
-
-.badge-select option {
-    color: #163a38;
-    background: white;
-}
-
-.notification-wrapper {
-    position: relative;
-}
-
-.notification-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255,255,255,0.15);
-    color: white;
-    font-size: 19px;
-    cursor: pointer;
-}
-
-.notification-panel {
-    position: absolute;
-    top: 48px;
-    right: 0;
-    width: 250px;
-    background: white;
-    color: var(--text);
-    padding: 17px;
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    display: none;
-    z-index: 20;
-}
-
-.notification-panel.show {
-    display: block;
-}
-
-.hero-text h1 {
-    font-size: 31px;
-    line-height: 1.18;
-    margin-bottom: 15px;
-}
-
-.hero-text p {
-    font-size: 14px;
-    line-height: 1.6;
-    color: rgba(255,255,255,0.85);
-    margin-bottom: 35px;
-}
-
-
-/* =========================================================
-   CITY SEARCH
-========================================================= */
-
-.search-box {
-    position: relative;
-    margin-bottom: 28px;
-}
-
-.search-box label {
-    display: block;
-    font-size: 13px;
-    margin-bottom: 8px;
-    color: rgba(255,255,255,0.9);
-}
-
-.city-input {
-    width: 100%;
-    padding: 14px 16px;
-    border: none;
-    border-radius: 12px;
-    outline: none;
-    font-size: 15px;
-    background: white;
-    color: var(--dark);
-}
-
-.suggestions {
-    position: absolute;
-    top: 68px;
-    width: 100%;
-    background: white;
-    color: var(--dark);
-    border-radius: 0 0 12px 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    z-index: 30;
-}
-
-.suggestion {
-    padding: 12px 15px;
-    cursor: pointer;
-    border-bottom: 1px solid #edf3f2;
-}
-
-.suggestion:hover {
-    background: var(--green-light);
-}
-
-
-/* =========================================================
-   LOCATIONS
-========================================================= */
-
-.section-title {
-    font-size: 13px;
-    margin-bottom: 12px;
-    color: rgba(255,255,255,0.8);
-}
-
-.location-cards {
-    display: flex;
-    gap: 10px;
-}
-
-.loc-card {
-    flex: 1;
-    padding: 13px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.16);
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.loc-card:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-.loc-card small {
-    opacity: 0.7;
-}
-
-.btn-action {
-    margin-top: 28px;
-    width: 100%;
-    border: none;
-    padding: 15px;
-    border-radius: 12px;
-    background: white;
-    color: var(--turquoise-dark);
-    font-weight: bold;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-.accessibility {
-    margin-top: auto;
-    padding-top: 35px;
-}
-
-.access-btn {
-    display: block;
-    width: 100%;
-    background: rgba(255,255,255,0.10);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 10px;
-    padding: 11px;
-    margin-top: 8px;
-    cursor: pointer;
-    text-align: left;
-}
-
-.access-btn:hover {
-    background: rgba(255,255,255,0.18);
-}
-
-
-/* =========================================================
-   MAIN CONTENT
-========================================================= */
-
-.main-content {
-    flex: 1;
-    padding: 45px;
-    max-width: 1200px;
-    margin: auto;
-}
-
-.header-location {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 25px;
-}
-
-.header-location h2 {
-    color: var(--dark);
-    font-size: 25px;
-}
-
-.aqi-overview-card {
-    /* AQI Gradient Bar */
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
-    box-shadow: var(--shadow);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.aqi-meter-wrapper {
-    width: 100%;
-    margin-top: 15px;
-}
-
-.aqi-meter-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 5px;
-    font-weight: 600;
-}
-
-.aqi-slider-track {
-    position: relative;
-    height: 12px;
-    border-radius: 6px;
-    background: linear-gradient(
-        to right, 
-        #42b883 0%,    /* Green: Good */
-        #ffd600 35%,   /* Yellow: Moderate */
-        #ff7e00 55%,   /* Orange: Unhealthy */
-        #ff0000 80%,   /* Red: Severe */
-        #7e0023 100%   /* Dark Red: Hazardous */
-    );
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
-}
-
-.aqi-pointer {
-    position: absolute;
-    top: -3px;
-    width: 6px;
-    height: 18px;
-    background-color: var(--dark);
-    border: 2px solid var(--white);
-    border-radius: 3px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    transform: translateX(-50%);
-    transition: left 0.5s ease-in-out;
-}
-
-/* Mobile Screen Responsiveness */
-@media (max-width: 768px) {
-    .main-content {
-        padding: 20px;
-    }
-    .aqi-overview-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-    }
-    .best-time-box {
-        width: 100%;
-    }
-}
-
-.aqi-overview-card small {
-    color: var(--muted);
-}
-
-.aqi-score {
-    font-size: 65px;
-    font-weight: bold;
-    color: var(--turquoise-dark);
-    margin-top: 5px;
-}
-
-.aqi-status {
-    display: inline-block;
-    padding: 7px 15px;
-    border-radius: 20px;
-    background: var(--green-light);
-    color: var(--turquoise-dark);
-    font-weight: bold;
-    font-size: 13px;
-}
-
-.best-time-box {
-    background: var(--mint);
-    padding: 18px;
-    border-radius: 15px;
-    min-width: 240px;
-    line-height: 1.7;
-}
-
-.best-time-box strong {
-    color: var(--turquoise-dark);
-}
-
-.best-time-box small {
-    color: var(--muted);
-}
-
-h4 {
-    color: var(--dark);
-    font-size: 17px;
-}
-
-
-/* =========================================================
-   POLLUTANTS
-========================================================= */
-
-.pollutant-grid {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.pollutant-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 5px 18px rgba(20,110,100,0.06);
-}
-
-.pollutant-name {
-    font-weight: bold;
-    color: var(--dark);
-    margin-bottom: 7px;
-}
-
-.pollutant-value {
-    font-size: 27px;
-    font-weight: bold;
-    color: var(--turquoise-dark);
-}
-
-.pollutant-unit {
-    font-size: 11px;
-    color: var(--muted);
-}
-
-.pollutant-status {
-    margin-top: 8px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.pollutant-advice {
-    margin-top: 10px;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--text);
-}
-
-.healthy {
-    color: #17834f;
-}
-
-.moderate {
-    color: #d88a00;
-}
-
-.unhealthy {
-    color: #c73535;
-}
-
-
-/* =========================================================
-   MAIN POLLUTANT
-========================================================= */
-
-.cause-card {
-    background: linear-gradient(135deg,#e8faf4,#f5fffc);
-    border: 1px solid #ccefe5;
-    border-radius: 20px;
-    padding: 25px;
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: 30px;
-    margin-bottom: 30px;
-}
-
-.cause-left {
-    border-right: 1px solid #cfe8e3;
-    padding-right: 25px;
-}
-
-.main-pollutant-name {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--turquoise-dark);
-}
-
-.cause-right {
-    line-height: 1.6;
-}
-
-.cause-right ul {
-    margin-top: 10px;
-    padding-left: 20px;
-}
-
-.cause-right li {
-    margin-bottom: 7px;
-}
-
-.main-advice {
-    margin-top: 14px;
-    padding: 13px;
-    background: white;
-    border-radius: 12px;
-    color: var(--turquoise-dark);
-    font-weight: bold;
-}
-
-
-/* =========================================================
-   HOURLY
-========================================================= */
-
-.hourly-bar {
-    display: flex;
-    gap: 7px;
-    align-items: end;
-    height: 180px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: var(--shadow);
-    overflow-x: auto;
-}
-
-.hour-item {
-    min-width: 42px;
-    height: 130px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 5px;
-}
-
-.hour-value {
-    width: 28px;
-    border-radius: 8px 8px 3px 3px;
-    background: linear-gradient(180deg,var(--turquoise),var(--green));
-    min-height: 8px;
-}
-
-.hour-label {
-    font-size: 10px;
-    color: var(--muted);
-}
-
-.hour-number {
-    font-size: 10px;
-    font-weight: bold;
-    color: var(--dark);
-}
-
-
-/* =========================================================
-   BIGGER TEXT
-========================================================= */
-
-body.large-text {
-    font-size: 18px;
-}
-
-body.large-text .hero-text h1 {
-    font-size: 36px;
-}
-
-body.large-text .aqi-score {
-    font-size: 75px;
-}
-
-body.large-text .pollutant-advice,
-body.large-text .pollutant-status,
-body.large-text .hour-label,
-body.large-text .hour-number {
-    font-size: 14px;
-}
-
-
-/* =========================================================
-   HIGH CONTRAST / COLOR VISION ACCESSIBILITY
-========================================================= */
-
-/*
-   This mode is deliberately NOT simply black-and-white.
-
-   It uses:
-   - strong blue
-   - bright yellow
-   - white
-   - black
-   - very clear text/background separation
-
-   It avoids relying only on red vs green to communicate
-   information, which is important for many forms of
-   colour-vision deficiency.
-*/
-
-body.high-contrast {
-    background: #ffffff;
-    color: #111111;
-}
-
-body.high-contrast .sidebar {
-    background: #0057b8;
-    color: #ffffff;
-}
-
-body.high-contrast .badge-select {
-    background: #ffffff;
-    color: #111111;
-    border: 3px solid #ffd600;
-}
-
-body.high-contrast .notification-btn {
-    background: #ffd600;
-    color: #111111;
-}
-
-body.high-contrast .hero-text p,
-body.high-contrast .search-box label,
-body.high-contrast .section-title {
-    color: #ffffff;
-}
-
-body.high-contrast .city-input {
-    background: #ffffff;
-    color: #111111;
-    border: 3px solid #ffd600;
-}
-
-body.high-contrast .suggestion {
-    background: #ffffff;
-    color: #111111;
-    border-bottom: 2px solid #111111;
-}
-
-body.high-contrast .suggestion:hover {
-    background: #ffd600;
-}
-
-body.high-contrast .loc-card {
-    background: #ffffff;
-    color: #111111;
-    border: 3px solid #ffd600;
-}
-
-body.high-contrast .btn-action {
-    background: #ffd600;
-    color: #111111;
-    border: 3px solid #111111;
-}
-
-body.high-contrast .access-btn {
-    background: #ffffff;
-    color: #111111;
-    border: 3px solid #ffd600;
-}
-
-body.high-contrast .access-btn:hover {
-    background: #ffd600;
-}
-
-body.high-contrast .main-content {
-    background: #ffffff;
-}
-
-body.high-contrast .header-location h2,
-body.high-contrast h4,
-body.high-contrast .pollutant-name {
-    color: #111111;
-}
-
-body.high-contrast .aqi-overview-card,
-body.high-contrast .pollutant-card,
-body.high-contrast .hourly-bar {
-    background: #ffffff;
-    border: 3px solid #0057b8;
-    box-shadow: none;
-}
-
-body.high-contrast .aqi-score {
-    color: #0057b8;
-}
-
-body.high-contrast .aqi-status {
-    background: #ffd600;
-    color: #111111;
-    border: 2px solid #111111;
-}
-
-body.high-contrast .best-time-box {
-    background: #e8f1ff;
-    border: 3px solid #0057b8;
-    color: #111111;
-}
-
-body.high-contrast .best-time-box strong,
-body.high-contrast .best-time-box small {
-    color: #111111;
-}
-
-body.high-contrast .pollutant-value {
-    color: #0057b8;
-}
-
-body.high-contrast .healthy {
-    color: #0057b8;
-}
-
-body.high-contrast .moderate {
-    color: #8a5200;
-    background: #ffd600;
-    padding: 3px 6px;
-}
-
-body.high-contrast .unhealthy {
-    color: #111111;
-    background: #ffd600;
-    padding: 3px 6px;
-}
-
-body.high-contrast .pollutant-advice {
-    color: #111111;
-}
-
-body.high-contrast .cause-card {
-    background: #e8f1ff;
-    border: 3px solid #0057b8;
-}
-
-body.high-contrast .cause-left {
-    border-right: 2px solid #0057b8;
-}
-
-body.high-contrast .main-pollutant-name {
-    color: #0057b8;
-}
-
-body.high-contrast .main-advice {
-    background: #ffd600;
-    color: #111111;
-    border: 2px solid #111111;
-}
-
-body.high-contrast .hour-value {
-    background: #0057b8;
-}
-
-body.high-contrast .hour-label,
-body.high-contrast .hour-number {
-    color: #111111;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media(max-width:900px) {
-
-    body {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        min-height: auto;
-    }
-
-    .main-content {
-        padding: 25px;
-    }
-
-    .pollutant-grid {
-        grid-template-columns: repeat(2,1fr);
-    }
-
-    .cause-card {
-        grid-template-columns: 1fr;
-    }
-
-    .cause-left {
-        border-right: none;
-        border-bottom: 1px solid #cfe8e3;
-        padding-right: 0;
-        padding-bottom: 20px;
-    }
-}
-
-@media(max-width:600px) {
-
-    .aqi-overview-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-    }
-
-    .pollutant-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .main-content {
-        padding: 18px;
-    }
-}
-/* AQI & Pollutant Dynamic Text Colors */
-.aqi-color-good {
-    color: #42b883 !important; /* Green */
-}
-.aqi-color-moderate {
-    color: #ffd600 !important; /* Yellow */
-}
-.aqi-color-unhealthy-sensitive {
-    color: #ff7e00 !important; /* Orange */
-}
-.aqi-color-unhealthy {
-    color: #ff0000 !important; /* Red */
-}
-.aqi-color-hazardous {
-    color: #7e0023 !important; /* Dark Red / Purple */
-}
-
-/* =========================================================
-   MOBILE PHONE VIEW
-========================================================= */
-
-@media (max-width: 600px) {
-
-    /* ---------- GENERAL ---------- */
-
-    body {
-        display: block;
-        width: 100%;
-        overflow-x: hidden;
-    }
-
-    /* ---------- SIDEBAR ---------- */
-
-    .sidebar {
-        width: 100%;
-        min-height: auto;
-        padding: 20px;
-    }
-
-    .top-nav {
-        margin-bottom: 25px;
-    }
-
-    .hero-text h1 {
-        font-size: 27px;
-    }
-
-    .hero-text p {
-        font-size: 13px;
-        margin-bottom: 25px;
-    }
-
-    /* ---------- CITY SEARCH ---------- */
-
-    .city-input {
-        font-size: 16px;
-        padding: 14px;
-    }
-
-    .suggestions {
-        top: 65px;
-    }
-
-    /* ---------- LOCATION CARDS ---------- */
-
-    .location-cards {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .loc-card {
-        width: 100%;
-    }
-
-    /* ---------- MAIN CONTENT ---------- */
-
-    .main-content {
-        width: 100%;
-        max-width: 100%;
-        padding: 20px 15px;
-        margin: 0;
-    }
-
-    .header-location {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .header-location h2 {
-        font-size: 21px;
-    }
-
-    /* ---------- AQI CARD ---------- */
-
-    .aqi-overview-card {
-        width: 100%;
-        padding: 20px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 18px;
-    }
-
-    .aqi-score {
-        font-size: 52px;
-    }
-
-    .best-time-box {
-        width: 100%;
-        min-width: 0;
-    }
-
-    /* ---------- POLLUTANTS ---------- */
-
-    .pollutant-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .pollutant-card {
-        width: 100%;
-    }
-
-    /* ---------- MAIN POLLUTANT ---------- */
-
-    .cause-card {
-        width: 100%;
-        grid-template-columns: 1fr;
-        gap: 20px;
-        padding: 20px;
-    }
-
-    .cause-left {
-        border-right: none;
-        border-bottom: 1px solid #cfe8e3;
-        padding-right: 0;
-        padding-bottom: 18px;
-    }
-
-    .main-pollutant-name {
-        font-size: 21px;
-    }
-
-    /* ---------- HOURLY CHART ---------- */
-
-    .hourly-bar {
-        width: 100%;
-        overflow-x: auto;
-        padding: 15px;
-    }
-
-    /* ---------- BUTTONS ---------- */
-
-    .btn-action,
-    .access-btn {
-        width: 100%;
-    }
-
-    /* ---------- TEXT ---------- */
-
-    .section-title {
-        font-size: 12px;
-    }
-
-    h4 {
-        font-size: 16px;
-    }
-}
-
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap");
+
+:root{--ink:#09233f;--muted:#55718b;--line:#b9d3e7;--blue:#0577c9;--deep:#034b86;--bg:#eaf7ff;--card:#fff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"DM Sans",Arial,sans-serif;color:var(--ink);background:var(--bg)}
+body.text-0{zoom:1}body.text-1{zoom:1.12}body.text-2{zoom:1.24}body.text-3{zoom:1.36}
+button,input,select{font:inherit;border-radius:0}button{cursor:pointer}.screen{min-height:100vh;padding:clamp(22px,5vw,70px)}
+#home{display:grid;grid-template-columns:1.1fr .9fr;gap:45px;align-items:center;background:linear-gradient(145deg,#effbff,#b6e7ff,#4bb9e8);position:relative;overflow:hidden}
+.brand{position:absolute;top:28px;left:clamp(22px,5vw,70px);font-size:1.3rem;font-weight:700}.brand b{padding:8px 10px;background:var(--deep);color:#fff;margin-right:8px}
+.controls{position:absolute;top:22px;right:clamp(22px,5vw,70px);display:flex;gap:7px;z-index:5}.controls button,.controls select{min-height:40px;padding:7px 10px;background:#ffffffcc;border:1px solid #718da6;color:var(--ink)}
+.theme-menu{display:none;position:absolute;right:20px;top:69px;z-index:20;background:#fff;border:1px solid var(--line);width:210px}.theme-menu.show{display:block}.theme-menu button{width:100%;padding:11px;background:#fff;border:0;border-bottom:1px solid var(--line);text-align:left}
+.hero{max-width:700px}.eyebrow{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em}h1,h2{font-family:"Playfair Display",Georgia,serif;letter-spacing:-.06em}h1{font-size:clamp(3.3rem,7vw,6.8rem);line-height:.92;margin:25px 0}.hero p{line-height:1.6;color:#234a6a}
+.search-card{max-width:650px;padding:23px;background:#ffffffe8;border:1px solid #8bb3d0;box-shadow:14px 14px 0 #07518b22}.search-row{display:flex;gap:9px;position:relative;margin-top:10px}.search-row input{width:100%;padding:14px;border:1px solid var(--line)}.primary{border:0;background:var(--deep);color:#fff;padding:13px 17px;font-weight:700;white-space:nowrap}
+.suggestions{position:absolute;top:100%;left:0;right:0;z-index:30;background:#fff;border:1px solid var(--line);max-height:220px;overflow:auto}.suggestion{padding:11px;border-bottom:1px solid #dcecf6;cursor:pointer}.suggestion:hover{background:#e7f7ff}.hint,.sub{color:var(--muted);font-size:.84rem}
+.city-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.city-card{padding:13px;background:#ffffffa8;border-left:4px solid var(--blue);font-size:.85rem;line-height:1.45}.city-card strong{display:block;font-size:1rem}.city-card p{margin:9px 0 0}
+.visual{display:grid;place-items:center}.sun{width:min(34vw,380px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 42% 40%,#fffbc8,#ffdd73 40%,#ee9a45 76%,#d97449);box-shadow:0 0 70px #ffe58a}
+.results{background:linear-gradient(145deg,#fbfeff,#dff3ff)}.results-head,.overview,.section-title,.pollutants,.main-detail,.wind-card,.hourly,.clinic{max-width:1300px;margin-left:auto;margin-right:auto}.results-head{display:flex;justify-content:space-between;gap:20px;align-items:start;margin-bottom:25px}.results h2{font-size:clamp(2.6rem,5vw,4.8rem);margin:7px 0}.back{padding:10px 14px;background:#fff;border:1px solid var(--line);color:var(--deep);font-weight:700}
+.overview{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.card{background:var(--card);border:1px solid var(--line);padding:28px;box-shadow:8px 8px 0 #07518b14}.aqi-card{background:linear-gradient(135deg,#fff,#dff4ff)}.aqi-row{display:flex;align-items:end;gap:17px}.aqi{font-size:clamp(5rem,10vw,8.4rem);font-weight:700;line-height:.8;color:var(--deep);letter-spacing:-.1em}.status,.tag{display:inline-block;padding:6px 9px;font-size:.78rem;font-weight:700}.good{background:#c7f2e8;color:#00554b}.moderate{background:#ffe18b;color:#5d4300}.bad{background:#ffc5ba;color:#7b2219}.meter{height:14px;margin-top:24px;position:relative;background:linear-gradient(90deg,#176bd6 0 18%,#00a6ad 18% 36%,#c18d00 36% 55%,#e66828 55% 74%,#bb2a3b 74%)}.pointer{position:absolute;top:-8px;left:0;width:4px;height:30px;background:#09233f;transition:left .5s}.best{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);line-height:1.6}
+.map-card{padding:0;min-height:335px;overflow:hidden;position:relative}.map-card iframe{width:100%;height:100%;min-height:335px;border:0}.map-label{position:absolute;z-index:2;top:14px;left:14px;padding:8px 10px;background:#fffffff0;border:1px solid var(--line);font-weight:700;color:var(--ink);text-decoration:none}
+.wind-card{display:flex;gap:22px;align-items:center;margin-top:18px;padding:20px 25px;background:linear-gradient(120deg,#fff,#dff4ff);border:1px solid var(--line);box-shadow:8px 8px 0 #07518b14}.wind-arrow{font-size:4rem;color:var(--deep);line-height:1}.wind-reading{font-size:1.5rem;font-weight:700;color:var(--deep)}.wind-card p{margin:4px 0;color:var(--muted)}
+.section-title{display:flex;justify-content:space-between;gap:15px;align-items:baseline;margin-top:35px;margin-bottom:12px}.section-title h3{margin:0;font-size:1.45rem}.pollutants{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.pollutant{min-height:205px;background:#fff;padding:17px;border-top:4px solid var(--blue);box-shadow:5px 5px 0 #07518b12}.pollutant-name{font-size:1.35rem;font-weight:700}.pollutant-value{font-size:2.35rem;font-weight:700;color:var(--deep);letter-spacing:-.07em;margin-top:10px}.unit{font-size:.78rem;color:var(--muted)}.advice{font-size:.85rem;line-height:1.45;color:#294a66}
+.main-detail{display:grid;grid-template-columns:.75fr 1.25fr;margin-top:18px;background:#083f72;color:#fff;border-left:8px solid #ff8b54}.main-detail>div{padding:25px}.main-name{font-size:2rem;font-weight:700}.main-detail p{line-height:1.55}.hourly{min-height:160px;padding:18px;background:#fff;border:1px solid var(--line);overflow:auto;white-space:nowrap}.hour{display:inline-flex;width:42px;height:125px;margin:0 5px;flex-direction:column;align-items:center;justify-content:end;font-size:.72rem}.hour i{display:block;width:19px;background:linear-gradient(#35bfe9,#0574c8);margin:5px}
+.clinic{margin-top:18px;padding:19px;display:flex;justify-content:space-between;gap:18px;align-items:center;background:linear-gradient(100deg,#b9e7ff,#eaf9ff);border:1px solid var(--line)}.clinic a{padding:12px 15px;background:var(--deep);color:#fff;text-decoration:none;font-weight:700;white-space:nowrap}.toast{display:none;position:fixed;right:18px;bottom:18px;z-index:50;background:#09233f;color:#fff;padding:13px;max-width:320px}.toast.show{display:block}
+body.theme-aquatic #home{background:linear-gradient(145deg,#e4ffff,#9fecef,#35aeba)}body.theme-aquatic .results{background:#e9ffff}body.theme-forest #home{background:linear-gradient(145deg,#f2faeb,#bde4ad,#5da66d)}body.theme-forest .results{background:#f4fff1}
+@media(max-width:900px){#home{grid-template-columns:1fr}.visual{display:none}.overview{grid-template-columns:1fr}.pollutants{grid-template-columns:repeat(2,1fr)}.main-detail{grid-template-columns:1fr}}@media(max-width:560px){.screen{padding:22px 16px}.controls{right:16px}.controls select{max-width:90px}h1{margin-top:90px}.search-row{flex-direction:column}.primary{width:100%}.city-grid,.pollutants{grid-template-columns:1fr}.results-head,.clinic{display:block}.back{margin-top:14px}.clinic a{display:block;text-align:center;margin-top:15px}}
+
+/* Keep the home-screen information panel in normal flow so it cannot cover the hero content. */
+#home{align-items:stretch}.hero{min-width:0;padding:100px 0 38px;display:flex;flex-direction:column;justify-content:center}.hero>div:last-child{position:relative;z-index:1;margin-top:28px}@media(max-width:560px){.hero{padding:88px 0 24px}.hero>div:last-child{margin-top:22px}}
+/* Decorative theme layers never cover interactive content. */
+#home>*{position:relative;z-index:1}#home::before,#home::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:0}body.theme-forest #home::before{opacity:1;background:repeating-linear-gradient(82deg,transparent 0 65px,#356b2c 66px 73px,#8dbb61 74px 80px,transparent 81px 142px);background-size:230px 100%;mask-image:linear-gradient(90deg,transparent 0 48%,#000 76%)}body.theme-forest #home::after{opacity:.8;background:radial-gradient(ellipse at 80% 24%,#d9ef83 0 7px,transparent 8px),radial-gradient(ellipse at 90% 56%,#c6e46b 0 6px,transparent 7px);background-size:55px 72px;mask-image:linear-gradient(90deg,transparent 0 48%,#000 76%)}body.theme-aquatic #home::before{opacity:1;background:repeating-radial-gradient(ellipse at 20% 115%,transparent 0 22px,#b8f8ff 23px 27px,transparent 28px 52px);background-size:230px 115px;mask-image:linear-gradient(90deg,transparent 0 35%,#000 65%)}body.theme-aquatic #home::after{opacity:.55;background:linear-gradient(155deg,transparent 0 43%,#0577c955 44% 48%,transparent 49% 100%)}
+/* Hindi typography, centred identity, severity figures, and readable midnight high contrast. */
+:lang(hi),:lang(hi) button,:lang(hi) input,:lang(hi) select{font-family:"Noto Sans Devanagari","Nirmala UI",sans-serif}:lang(hi) h1,:lang(hi) h2{font-family:"Noto Sans Devanagari","Nirmala UI",sans-serif;letter-spacing:-.035em;line-height:1.08}:lang(hi) .hero p,:lang(hi) .advice,:lang(hi) .hint,:lang(hi) .sub{line-height:1.75}:lang(hi) .eyebrow{letter-spacing:.04em}.brand{left:50%;transform:translateX(-50%);top:24px;font-size:clamp(2rem,4vw,3.35rem);letter-spacing:-.055em;white-space:nowrap}.brand b{vertical-align:middle}.hero{padding-top:160px!important}.aqi-number-good,.pollutant-number-good{color:#007a68!important}.aqi-number-moderate,.pollutant-number-moderate{color:#936000!important}.aqi-number-unhealthy,.pollutant-number-unhealthy{color:#b54708!important}.aqi-number-very-unhealthy,.pollutant-number-very-unhealthy{color:#b42318!important}.aqi-number-hazardous,.pollutant-number-hazardous{color:#7a1538!important}
+body.theme-contrast #home,body.theme-contrast .results{background:#061a3a!important;color:#fff!important}body.theme-contrast #home::before,body.theme-contrast #home::after{opacity:0!important}body.theme-contrast #home .brand,body.theme-contrast #home .hero,body.theme-contrast #home .hero p,body.theme-contrast .results-head,body.theme-contrast .results-head .sub,body.theme-contrast .section-title,body.theme-contrast .section-title .sub{color:#fff!important}body.theme-contrast .brand b,body.theme-contrast .primary,body.theme-contrast .clinic a,body.theme-contrast .back{background:#ffd400!important;color:#061a3a!important;border:3px solid #fff!important}body.theme-contrast .controls button,body.theme-contrast .controls select,body.theme-contrast .theme-menu,body.theme-contrast .theme-menu button,body.theme-contrast .card,body.theme-contrast .pollutant,body.theme-contrast .wind-card,body.theme-contrast .main-detail,body.theme-contrast .hourly,body.theme-contrast .clinic,body.theme-contrast .search-card,body.theme-contrast .city-card,body.theme-contrast .map-label{background:#fff!important;color:#061a3a!important;border:3px solid #ffd400!important;box-shadow:none!important}body.theme-contrast .city-card,.theme-contrast .city-card strong,.theme-contrast .city-card p{color:#000!important}body.theme-contrast .main-detail{border-left-width:10px!important}body.theme-contrast .sub,body.theme-contrast .advice,body.theme-contrast .wind-card p,body.theme-contrast .hint{color:#061a3a!important}body.theme-contrast .good{background:#c7f2e8!important;color:#003d35!important;border:2px solid #003d35!important}body.theme-contrast .moderate{background:#ffd400!important;color:#382800!important;border:2px solid #382800!important}body.theme-contrast .bad{background:#d92d20!important;color:#fff!important;border:2px solid #69120b!important}body.theme-contrast :focus-visible{outline:4px solid #ffd400!important;outline-offset:3px}@media(max-width:560px){.brand{top:76px;font-size:2rem}.hero{padding-top:150px!important}}
 </style>
 </head>
 
+<body class="text-0">
 
-<body>
+<section class="screen" id="home">
+  <div class="brand"><b>☁</b>AirAware</div>
 
+  <div class="controls">
+    <select id="language"><option value="en">English</option><option value="hi">हिन्दी</option></select>
+    <button id="textButton">A</button>
+    <button id="themeButton">◐</button>
+    <button id="notifyButton">🔔</button>
+    <button id="readButton">🔊</button>
+  </div>
 
-<!-- =========================================================
-     SIDEBAR
-========================================================= -->
+  <div class="theme-menu" id="themes">
+    <button data-theme="">Blue Sky</button>
+    <button data-theme="theme-aquatic">Aquatic Calm</button>
+    <button data-theme="theme-forest">Trees Green</button>
+    <button data-theme="theme-contrast">Windows High Contrast</button>
+  </div>
 
-<div class="sidebar">
+  <div class="hero">
+    <p class="eyebrow">Personal air intelligence</p>
+    <h1>Breathe with<br>the weather.</h1>
+    <p>Clear air quality, practical health advice, and a calmer way to plan your day.</p>
 
-    <div class="top-nav">
+    <div class="search-card">
+      <label class="eyebrow">Find your city in India</label>
 
-        <select
-            class="badge-select"
-            id="languageSelect"
-            onchange="changeLanguage()">
+      <div class="search-row">
+        <input id="cityInput" placeholder="Start typing, e.g. Mumbai" autocomplete="off">
+        <button class="primary" id="check">Check AQI ↓</button>
+        <div class="suggestions" id="suggestions"></div>
+      </div>
 
-            <option value="en">English</option>
-            <option value="hi">हिन्दी</option>
-            <option value="mr">मराठी</option>
-
-        </select>
-
-
-        <div class="notification-wrapper">
-
-            <button
-                class="notification-btn"
-                onclick="toggleNotifications()"
-                aria-label="Notifications">
-
-                🔔
-
-            </button>
-
-
-            <div
-                class="notification-panel"
-                id="notificationPanel">
-
-                <strong id="notificationTitle">
-                    Air Quality Notification
-                </strong>
-
-                <p
-                    id="notificationText"
-                    style="margin-top:7px;">
-
-                    Your air quality information will appear here.
-
-                </p>
-
-            </div>
-
-        </div>
-
+      <p class="hint">Choose a verified city result, then we will take you to its air report.</p>
     </div>
-
-
-    <div class="hero-text">
-
-        <h1 id="heroTitle">
-            Check Air Quality.<br>
-            Breathe Better. Live Better.
-        </h1>
-
-        <p id="heroSubtitle">
-            Simple, reliable air quality information for everyone.
-        </p>
-
-    </div>
-
-
-    <!-- CITY SEARCH -->
-
-    <div class="search-box">
-
-        <label id="cityLabel">
-            Enter a city or area
-        </label>
-
-        <input
-            type="text"
-            id="cityInput"
-            class="city-input"
-            placeholder="Type a city, e.g. Mumbai"
-            autocomplete="off">
-
-        <div
-            class="suggestions"
-            id="suggestions">
-        </div>
-
-    </div>
-
 
     <div>
+      <h3>Air quality elsewhere right now</h3>
+      <div class="city-grid" id="cityGrid"></div>
+    </div>
+  </div>
 
-        <div class="section-title">
-            <span id="locationsTitle">
-                Your Locations
-            </span>
-        </div>
+  <div class="visual"><div class="sun"></div></div>
+</section>
 
-        <div class="location-cards">
-
-            <div
-                class="loc-card"
-                onclick="selectCity('Mumbai')">
-
-                <strong id="mumbaiCity">Mumbai</strong><br>
-                <small class="maharashtraState">Maharashtra</small>
-
-            </div>
-
-
-            <div
-                class="loc-card"
-                onclick="selectCity('Pune')">
-
-                <strong id="puneCity">Pune</strong><br>
-                <small class="maharashtraState">Maharashtra</small>
-
-            </div>
-
-        </div>
-
+<section class="screen results" id="results">
+  <div class="results-head">
+    <div>
+      <p class="eyebrow">Air report</p>
+      <h2 id="location">Your city</h2>
+      <p class="sub" id="updated">Enter a city above for live information.</p>
     </div>
 
+    <button class="back" id="back">← Search another city</button>
+  </div>
 
-    <button
-        class="btn-action"
-        onclick="fetchAQIData()"
-        id="getAQIButton">
+  <div class="overview">
+    <article class="card aqi-card">
+      <p class="eyebrow">Air Quality Index</p>
 
-        Get Air Quality →
+      <div class="aqi-row">
+        <div class="aqi" id="aqi">—</div>
+        <span class="status moderate" id="aqiStatus">Waiting</span>
+      </div>
 
-    </button>
+      <div class="meter"><i class="pointer" id="pointer"></i></div>
 
+      <div class="best">
+        <b>Best time to go out:</b> <span id="best">—</span>
+        <br>
+        <span class="sub">Air quality is better during these hours.</span>
+      </div>
+    </article>
 
-    <!-- ACCESSIBILITY -->
+    <article class="card map-card">
+      <span class="map-label">📍 <span id="mapCity">Your city</span></span>
+      <iframe id="map" title="City map" loading="lazy"></iframe>
+      <a class="map-label" id="mapLink" style="top:auto;bottom:15px" target="_blank">Open city map ↗</a>
+    </article>
+  </div>
 
-    <div class="accessibility">
+  <section class="wind-card">
+    <div class="wind-arrow" id="windArrow">↑</div>
+    <div>
+      <p class="eyebrow">Wind</p>
+      <div class="wind-reading" id="windSpeed">—</div>
+      <p id="windDirection">Wind direction unavailable</p>
+    </div>
+  </section>
 
-        <button
-            class="access-btn"
-            onclick="toggleLargeText()"
-            id="textSizeButton">
+  <div class="section-title">
+    <h3>What is in the air</h3>
+    <span class="sub">Each reading comes with its own advice</span>
+  </div>
 
-            🔤 Bigger Text
+  <div class="pollutants" id="pollutants"></div>
 
-        </button>
-
-
-        <button
-            class="access-btn"
-            onclick="toggleContrast()"
-            id="contrastButton">
-
-            ◐ High Contrast
-
-        </button>
-
-
-        <button
-            class="access-btn"
-            onclick="toggleReadAloud()"
-            id="readButton">
-
-            🔊 Read Aloud
-
-        </button>
-
+  <section class="main-detail">
+    <div>
+      <p class="eyebrow">Main concern</p>
+      <div class="main-name" id="mainPollutant">—</div>
+      <p id="contribution">—</p>
     </div>
 
-</div>
+    <div>
+      <b>What this means for you</b>
+      <p id="effect">We will identify the main pollutant.</p>
+      <p id="mainAdvice"></p>
+    </div>
+  </section>
 
+  <div class="section-title">
+    <h3>Hourly AQI</h3>
+    <span class="sub">Today’s pattern</span>
+  </div>
 
-<!-- =========================================================
-     MAIN CONTENT
-========================================================= -->
+  <div class="hourly" id="hourly">Hourly AQI will appear here when supplied by the API.</div>
 
-<div class="main-content">
-
-    <div class="header-location">
-
-        <h2 id="locTitle">
-            📍 Mumbai, Maharashtra
-        </h2>
-
-        <span style="color:#e74c3c;font-size:20px;">
-            ❤️
-        </span>
-
+  <section class="clinic">
+    <div>
+      <b>Need health support?</b><br>
+      <span class="sub">If pollution is affecting your breathing, book a local clinic appointment.</span>
     </div>
 
-
-    <!-- AQI -->
-
-    <div class="aqi-overview-card">
-
-        <div>
-
-            <small id="aqiLabel">
-                Air Quality Index (AQI)
-            </small>
-
-            <div
-                class="aqi-score"
-                id="aqiValue">
-
-                --
-
-            </div>
-
-            <div
-                class="aqi-status"
-                id="aqiStatus">
-
-                Loading...
-
-            </div>
-
-            <!-- AQI Gradient Scale Bar -->
-            <div class="aqi-meter-wrapper">
-                <div class="aqi-meter-labels">
-                    <span>0 Good</span>
-                    <span>150 Mod</span>
-                    <span>300+ Bad</span>
-                </div>
-                <div class="aqi-slider-track">
-                    <div id="aqi-pointer" class="aqi-pointer" style="left: 0%;"></div>
-                </div>
-            </div>
-
-        </div>
-
-
-        <div class="best-time-box">
-
-            <strong id="bestTimeTitle">
-                Best time to go out
-            </strong>
-
-            <br>
-
-            <span id="bestTime">
-                --
-            </span>
-
-            <br>
-
-            <small id="bestTimeDescription">
-                Air quality is better during these hours.
-            </small>
-
-        </div>
-
-    </div>
-
-
-    <!-- POLLUTANTS -->
-
-    <h4
-        id="pollutantsTitle"
-        style="margin-bottom:10px;">
-
-        Key Pollutants
-
-    </h4>
-
-
-    <div
-        class="pollutant-grid"
-        id="pollutantsGrid">
-
-    </div>
-
-
-    <!-- MAIN POLLUTANT -->
-
-    <div class="cause-card">
-
-        <div class="cause-left">
-
-            <div>
-
-                <span
-                    class="main-pollutant-name"
-                    id="mainPollutant">
-
-                    --
-
-                </span>
-
-                <span id="mainPollutantSentence">
-                    is the main pollutant.
-
-                </span>
-
-            </div>
-
-
-            <div
-                style="font-size:2rem;font-weight:bold;margin-top:15px;"
-                id="contributionVal">
-
-                --
-
-            </div>
-
-
-            <small id="contributionLabel">
-                contribution to AQI
-            </small>
-
-        </div>
-
-
-        <div class="cause-right">
-
-            <strong id="effectsTitle">
-                Why it matters:
-            </strong>
-
-            <ul id="pollutantEffects"></ul>
-
-            <div
-                class="main-advice"
-                id="mainPollutantAdvice">
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- HOURLY -->
-
-    <h4
-        id="hourlyTitle"
-        style="margin-bottom:10px;">
-
-        Hourly AQI (Today)
-
-    </h4>
-
-
-    <div
-        class="hourly-bar"
-        id="hourlyBar">
-
-    </div>
-
-</div>
-
+    <a href="https://www.mohfw.gov.in/" target="_blank">Find a health clinic ↗</a>
+  </section>
+</section>
+
+<div class="toast" id="toast"></div>
 
 <script>
-
-
-/* =========================================================
-   GLOBAL VARIABLES
-========================================================= */
+const $ = id => document.getElementById(id);
 
 let selectedCity = "Mumbai";
-let currentLanguage = "en";
-let currentAQIData = null;
-
+let selectedPlace = null;
+let currentData = null;
+let textLevel = 0;
 let isReading = false;
-
-
-/* =========================================================
-   TRANSLATIONS
-========================================================= */
-
-const translations = {
-
-    en: {
-
-        heroTitle: "Check Air Quality.<br>Breathe Better. Live Better.",
-        heroSubtitle: "Simple, reliable air quality information for everyone.",
-        cityLabel: "Enter a city or area",
-        placeholder: "Type a city, e.g. Mumbai",
-
-        mumbaiCity: "Mumbai",
-        puneCity: "Pune",
-        maharashtraState: "Maharashtra",
-
-        locationsTitle: "Your Locations",
-        getAQI: "Get Air Quality →",
-
-        aqiLabel: "Air Quality Index (AQI)",
-        bestTime: "Best time to go out",
-        bestDescription: "Air quality is better during these hours.",
-        pollutants: "Key Pollutants",
-
-        mainSentence: "is the main pollutant.",
-        contribution: "contribution to AQI",
-        whyMatters: "Why it matters:",
-        hourly: "Hourly AQI (Today)",
-
-        biggerText: "🔤 Bigger Text",
-        contrast: "◐ High Contrast",
-
-        read: "🔊 Read Aloud",
-        stopRead: "⏹ Stop Reading",
-
-        notification: "Air Quality Notification",
-        notificationText: "Your air quality information will appear here.",
-
-        healthy: "Healthy",
-        moderate: "Moderate",
-        unhealthy: "Unhealthy",
-
-        healthyAdvice: "Air quality is within a healthy range. You can go about your normal activities.",
-        moderateAdvice: "Air quality is moderate. Sensitive people should reduce prolonged outdoor exposure.",
-        unhealthyAdvice: "Air quality is unhealthy. Limit prolonged outdoor exposure and take protective measures.",
-
-        pm25AdviceHealthy: "PM2.5 is within a healthy range. A mask is optional in normal outdoor conditions.",
-        pm25AdviceBad: "PM2.5 is elevated. You should wear a well-fitting mask and reduce prolonged outdoor exposure.",
-
-        pm10AdviceHealthy: "PM10 is within a healthy range. Normal outdoor activity is generally fine.",
-        pm10AdviceBad: "PM10 is elevated. Wearing a mask can help reduce inhalation of larger particles.",
-
-        ozoneAdviceHealthy: "Ozone is within a healthy range. Wear sunscreen when spending time outdoors.",
-        ozoneAdviceBad: "Ozone is elevated. Wear sunscreen, carry an umbrella, and reduce prolonged outdoor exposure.",
-
-        no2AdviceHealthy: "NO₂ is within a healthy range. Normal outdoor activity is generally fine.",
-        no2AdviceBad: "NO₂ is elevated. Reduce prolonged outdoor exposure and consider wearing a mask.",
-
-        so2AdviceHealthy: "SO₂ is within a healthy range. Normal outdoor activity is generally fine.",
-        so2AdviceBad: "SO₂ is elevated. Reduce outdoor exposure, especially if you experience breathing discomfort.",
-
-        coAdviceHealthy: "CO is within a healthy range. Normal outdoor activity is generally fine.",
-        coAdviceBad: "CO is elevated. Avoid prolonged exposure to polluted outdoor environments.",
-
-        mainPM25: "PM2.5 can penetrate deep into the lungs and may affect respiratory health.",
-        mainPM10: "PM10 consists of inhalable particles that can enter the respiratory system and cause irritation.",
-        mainO3: "High ozone levels can irritate the lungs and may make breathing uncomfortable.",
-        mainNO2: "High NO₂ levels can irritate the airways and may worsen respiratory symptoms.",
-        mainSO2: "SO₂ can irritate the respiratory system, particularly in sensitive individuals.",
-        mainCO: "High carbon monoxide levels reduce the blood's ability to carry oxygen effectively.",
-
-        suggestionLoading: "Searching Indian cities...",
-        noSuggestions: "No Indian cities found.",
-
-        error: "Unable to fetch air quality data. Please try again."
-
-    },
-
-
-    hi: {
-
-        heroTitle: "वायु गुणवत्ता जांचें।<br>बेहतर सांस लें। बेहतर जीवन जिएं।",
-        heroSubtitle: "सभी के लिए सरल और विश्वसनीय वायु गुणवत्ता जानकारी।",
-        cityLabel: "शहर या क्षेत्र दर्ज करें",
-        placeholder: "शहर लिखें, जैसे मुंबई",
-
-        mumbaiCity: "मुंबई",
-        puneCity: "पुणे",
-        maharashtraState: "महाराष्ट्र",
-
-        locationsTitle: "आपके स्थान",
-        getAQI: "वायु गुणवत्ता देखें →",
-
-        aqiLabel: "वायु गुणवत्ता सूचकांक (AQI)",
-        bestTime: "बाहर जाने का सबसे अच्छा समय",
-        bestDescription: "इन घंटों में वायु गुणवत्ता बेहतर है।",
-        pollutants: "मुख्य प्रदूषक",
-
-        mainSentence: "मुख्य प्रदूषक है।",
-        contribution: "AQI में योगदान",
-        whyMatters: "यह क्यों महत्वपूर्ण है:",
-        hourly: "आज का प्रति घंटा AQI",
-
-        biggerText: "🔤 बड़ा टेक्स्ट",
-        contrast: "◐ हाई कॉन्ट्रास्ट",
-
-        read: "🔊 पढ़कर सुनाएं",
-        stopRead: "⏹ पढ़ना बंद करें",
-
-        notification: "वायु गुणवत्ता सूचना",
-        notificationText: "आपकी वायु गुणवत्ता जानकारी यहां दिखाई देगी।",
-
-        healthy: "स्वस्थ",
-        moderate: "मध्यम",
-        unhealthy: "अस्वस्थ",
-
-        healthyAdvice: "वायु गुणवत्ता स्वस्थ स्तर पर है। आप सामान्य गतिविधियां कर सकते हैं।",
-        moderateAdvice: "वायु गुणवत्ता मध्यम है। संवेदनशील लोगों को लंबे समय तक बाहर रहने से बचना चाहिए।",
-        unhealthyAdvice: "वायु गुणवत्ता अस्वस्थ है। लंबे समय तक बाहर रहने से बचें और सावधानी बरतें।",
-
-        pm25AdviceHealthy: "PM2.5 स्वस्थ स्तर पर है। सामान्य परिस्थितियों में मास्क वैकल्पिक है।",
-        pm25AdviceBad: "PM2.5 बढ़ा हुआ है। अच्छी तरह फिट होने वाला मास्क पहनें और लंबे समय तक बाहर रहने से बचें।",
-
-        pm10AdviceHealthy: "PM10 स्वस्थ स्तर पर है। सामान्य बाहरी गतिविधियां की जा सकती हैं।",
-        pm10AdviceBad: "PM10 बढ़ा हुआ है। बड़े कणों को सांस के साथ अंदर जाने से कम करने के लिए मास्क पहनें।",
-
-        ozoneAdviceHealthy: "ओजोन स्वस्थ स्तर पर है। बाहर जाते समय सनस्क्रीन लगाएं।",
-        ozoneAdviceBad: "ओजोन बढ़ा हुआ है। सनस्क्रीन लगाएं, छाता रखें और लंबे समय तक बाहर रहने से बचें।",
-
-        no2AdviceHealthy: "NO₂ स्वस्थ स्तर पर है। सामान्य बाहरी गतिविधियां की जा सकती हैं।",
-        no2AdviceBad: "NO₂ बढ़ा हुआ है। लंबे समय तक बाहर रहने से बचें और मास्क पहनने पर विचार करें।",
-
-        so2AdviceHealthy: "SO₂ स्वस्थ स्तर पर है। सामान्य बाहरी गतिविधियां की जा सकती हैं।",
-        so2AdviceBad: "SO₂ बढ़ा हुआ है। बाहर रहने का समय कम करें, खासकर यदि सांस लेने में परेशानी हो।",
-
-        coAdviceHealthy: "CO स्वस्थ स्तर पर है। सामान्य बाहरी गतिविधियां की जा सकती हैं।",
-        coAdviceBad: "CO बढ़ा हुआ है। प्रदूषित वातावरण में लंबे समय तक रहने से बचें।",
-
-        mainPM25: "PM2.5 फेफड़ों में गहराई तक जा सकता है और श्वसन स्वास्थ्य को प्रभावित कर सकता है।",
-        mainPM10: "PM10 के सांस के साथ अंदर जाने वाले कण श्वसन तंत्र में पहुंचकर जलन पैदा कर सकते हैं।",
-        mainO3: "ओजोन का उच्च स्तर फेफड़ों में जलन पैदा कर सकता है और सांस लेने में परेशानी कर सकता है।",
-        mainNO2: "NO₂ का उच्च स्तर श्वसन मार्ग में जलन पैदा कर सकता है और सांस संबंधी समस्याओं को बढ़ा सकता है।",
-        mainSO2: "SO₂ श्वसन तंत्र में जलन पैदा कर सकता है, खासकर संवेदनशील लोगों में।",
-        mainCO: "CO का उच्च स्तर रक्त की ऑक्सीजन ले जाने की क्षमता को कम कर सकता है।",
-
-        suggestionLoading: "भारतीय शहर खोज रहे हैं...",
-        noSuggestions: "कोई भारतीय शहर नहीं मिला।",
-
-        error: "वायु गुणवत्ता डेटा प्राप्त नहीं हो सका। कृपया दोबारा प्रयास करें।"
-
-    },
-
-
-    mr: {
-
-        heroTitle: "हवेची गुणवत्ता तपासा।<br>चांगला श्वास घ्या. निरोगी जगा.",
-        heroSubtitle: "प्रत्येकासाठी सोपी आणि विश्वासार्ह हवेच्या गुणवत्तेची माहिती.",
-        cityLabel: "शहर किंवा परिसराचे नाव लिहा",
-        placeholder: "शहर लिहा, उदा. मुंबई",
-
-        mumbaiCity: "मुंबई",
-        puneCity: "पुणे",
-        maharashtraState: "महाराष्ट्र",
-
-        locationsTitle: "तुमची ठिकाणे",
-        getAQI: "हवेची गुणवत्ता पहा →",
-
-        aqiLabel: "हवा गुणवत्ता निर्देशांक (AQI)",
-        bestTime: "बाहेर जाण्यासाठी योग्य वेळ",
-        bestDescription: "या वेळेत हवेची गुणवत्ता चांगली असते.",
-        pollutants: "मुख्य प्रदूषक",
-
-        mainSentence: "हा मुख्य प्रदूषक आहे.",
-        contribution: "AQI मधील योगदान",
-        whyMatters: "हे महत्त्वाचे का आहे:",
-        hourly: "आजचा तासानुसार AQI",
-
-        biggerText: "🔤 मोठा मजकूर",
-        contrast: "◐ हाय कॉन्ट्रास्ट",
-
-        read: "🔊 मोठ्याने वाचा",
-        stopRead: "⏹ वाचन थांबवा",
-
-        notification: "हवेच्या गुणवत्तेची सूचना",
-        notificationText: "तुमची हवेच्या गुणवत्तेची माहिती येथे दिसेल.",
-
-        healthy: "निरोगी",
-        moderate: "मध्यम",
-        unhealthy: "अस्वस्थ",
-
-        healthyAdvice: "हवेची गुणवत्ता निरोगी पातळीवर आहे. तुम्ही सामान्य क्रिया करू शकता.",
-        moderateAdvice: "हवेची गुणवत्ता मध्यम आहे. संवेदनशील व्यक्तींनी जास्त वेळ बाहेर राहणे टाळावे.",
-        unhealthyAdvice: "हवेची गुणवत्ता अस्वस्थ आहे. जास्त वेळ बाहेर राहणे टाळा आणि संरक्षणात्मक उपाय करा.",
-
-        pm25AdviceHealthy: "PM2.5 निरोगी पातळीवर आहे. सामान्य परिस्थितीत मास्क ऐच्छिक आहे.",
-        pm25AdviceBad: "PM2.5 वाढलेले आहे. योग्य प्रकारे बसणारा मास्क वापरा आणि जास्त वेळ बाहेर राहणे टाळा.",
-
-        pm10AdviceHealthy: "PM10 निरोगी पातळीवर आहे. सामान्य बाहेरील क्रिया करता येतात.",
-        pm10AdviceBad: "PM10 वाढलेले आहे. मोठे कण श्वासातून आत जाणे कमी करण्यासाठी मास्क वापरा.",
-
-        ozoneAdviceHealthy: "ओझोन निरोगी पातळीवर आहे. बाहेर जाताना सनस्क्रीन लावा.",
-        ozoneAdviceBad: "ओझोन वाढलेले आहे. सनस्क्रीन लावा, छत्री बाळगा आणि जास्त वेळ बाहेर राहणे टाळा.",
-
-        no2AdviceHealthy: "NO₂ निरोगी पातळीवर आहे. सामान्य बाहेरील क्रिया करता येतात.",
-        no2AdviceBad: "NO₂ वाढलेले आहे. जास्त वेळ बाहेर राहणे टाळा आणि मास्क वापरण्याचा विचार करा.",
-
-        so2AdviceHealthy: "SO₂ निरोगी पातळीवर आहे. सामान्य बाहेरील क्रिया करता येतात.",
-        so2AdviceBad: "SO₂ वाढलेले आहे. विशेषतः श्वास घेण्यास त्रास होत असल्यास बाहेर राहण्याचा वेळ कमी करा.",
-
-        coAdviceHealthy: "CO निरोगी पातळीवर आहे. सामान्य बाहेरील क्रिया करता येतात.",
-        coAdviceBad: "CO वाढलेले आहे. प्रदूषित वातावरणात जास्त वेळ राहणे टाळा.",
-
-        mainPM25: "PM2.5 फुफ्फुसांमध्ये खोलवर जाऊ शकते आणि श्वसनाच्या आरोग्यावर परिणाम करू शकते.",
-        mainPM10: "PM10 मधील श्वसनयोग्य कण श्वसनमार्गात जाऊन जळजळ निर्माण करू शकतात.",
-        mainO3: "ओझोनची उच्च पातळी फुफ्फुसांना त्रास देऊ शकते आणि श्वास घेण्यास त्रास होऊ शकतो.",
-        mainNO2: "NO₂ ची उच्च पातळी श्वसनमार्गाला त्रास देऊ शकते आणि श्वसनाच्या समस्या वाढवू शकते.",
-        mainSO2: "SO₂ मुळे श्वसनमार्गाला त्रास होऊ शकतो, विशेषतः संवेदनशील व्यक्तींमध्ये.",
-        mainCO: "CO ची उच्च पातळी रक्ताची ऑक्सिजन वाहून नेण्याची क्षमता कमी करू शकते.",
-
-        suggestionLoading: "भारतीय शहरे शोधत आहे...",
-        noSuggestions: "कोणतेही भारतीय शहर सापडले नाही.",
-
-        error: "हवेची गुणवत्ता माहिती मिळवता आली नाही. कृपया पुन्हा प्रयत्न करा."
-
-    }
-
+let searchTimer;
+let selectedLanguage = "en";
+
+const languageSettings = {
+  en: {
+    locale: "en-IN",
+    speech: "en-IN",
+    cityPlaceholder: "Start typing, e.g. Mumbai",
+    check: "Check AQI ↓",
+    searchLabel: "Find your city in India",
+    hint: "Choose a verified city result, then we will take you to its air report.",
+    elsewhere: "Air quality elsewhere right now",
+    back: "← Search another city",
+    noCity: "No verified Indian city found.",
+    readUnsupported: "Read aloud is not supported by this browser.",
+    searchFirst: "Search for a city first."
+  },
+  hi: {
+    locale: "hi-IN",
+    speech: "hi-IN",
+    cityPlaceholder: "लिखना शुरू करें, जैसे मुंबई",
+    check: "AQI जाँचें ↓",
+    searchLabel: "भारत में अपना शहर खोजें",
+    hint: "सत्यापित शहर चुनें, फिर हम आपको उसकी वायु रिपोर्ट दिखाएंगे।",
+    elsewhere: "अभी अन्य जगहों की वायु गुणवत्ता",
+    back: "← दूसरा शहर खोजें",
+    noCity: "कोई सत्यापित भारतीय शहर नहीं मिला।",
+    readUnsupported: "इस ब्राउज़र में पढ़कर सुनाने की सुविधा उपलब्ध नहीं है।",
+    searchFirst: "पहले कोई शहर खोजें।"
+  }
 };
 
+const fullCopy = {
+ en:{brand:"AirAware",hero:"Personal air intelligence",title:"Breathe with<br>the weather.",intro:"Clear air quality, practical health advice, and a calmer way to plan your day.",report:"Air report",yourCity:"Your city",waiting:"Enter a city above for live information.",aqi:"Air Quality Index",pending:"Waiting",best:"Best time to go out:",better:"Air quality is better during these hours.",map:"Open city map ↗",wind:"Wind",windNone:"Wind direction unavailable",what:"What is in the air",each:"Each reading comes with its own advice",concern:"Main concern",means:"What this means for you",identify:"We will identify the main pollutant.",hourly:"Hourly AQI",pattern:"Today’s pattern",hourlyWait:"Hourly AQI will appear here when supplied by the API.",help:"Need health support?",helpText:"If pollution is affecting your breathing, book a local clinic appointment.",clinic:"Find a health clinic ↗",live:"Live report",noHourly:"Hourly AQI was not included by the API response.",sky:"Blue Sky",water:"Aquatic Calm",forest:"Trees Green",contrast:"Windows High Contrast",narration:"AirAware. Personal air intelligence. Clear air quality and practical health advice. Your city report follows."},
+ hi:{brand:"एयरअवेयर",hero:"आपकी व्यक्तिगत वायु जानकारी",title:"मौसम के साथ<br>साँस लें।",intro:"साफ़ वायु गुणवत्ता, व्यावहारिक स्वास्थ्य सलाह और अपने दिन की बेहतर योजना।",report:"वायु रिपोर्ट",yourCity:"आपका शहर",waiting:"लाइव जानकारी के लिए ऊपर शहर दर्ज करें।",aqi:"वायु गुणवत्ता सूचकांक",pending:"प्रतीक्षा में",best:"बाहर जाने का सबसे अच्छा समय:",better:"इन घंटों में वायु गुणवत्ता बेहतर रहती है।",map:"शहर का नक्शा खोलें ↗",wind:"हवा",windNone:"हवा की दिशा उपलब्ध नहीं है",what:"हवा में क्या है",each:"हर रीडिंग के साथ उपयोगी सलाह",concern:"मुख्य चिंता",means:"आपके लिए इसका अर्थ",identify:"हम मुख्य प्रदूषक की पहचान करेंगे।",hourly:"प्रति घंटे AQI",pattern:"आज का पैटर्न",hourlyWait:"API से मिलने पर प्रति घंटे का AQI यहाँ दिखेगा।",help:"स्वास्थ्य सहायता चाहिए?",helpText:"अगर प्रदूषण से साँस लेने में परेशानी हो रही है, तो स्थानीय क्लिनिक में अपॉइंटमेंट लें।",clinic:"स्वास्थ्य क्लिनिक खोजें ↗",live:"लाइव रिपोर्ट",noHourly:"API के उत्तर में प्रति घंटे का AQI शामिल नहीं था।",sky:"नीला आकाश",water:"जलीय शांति",forest:"हरे पेड़",contrast:"उच्च कंट्रास्ट",narration:"एयरअवेयर। आपकी व्यक्तिगत वायु जानकारी। साफ़ हवा और उपयोगी स्वास्थ्य सलाह। अब आपके शहर की रिपोर्ट सुनें।"}
+};
 
-/* =========================================================
-   TRANSLATION HELPER
-========================================================= */
+const localized = {
+  en: {good:"Good",moderate:"Moderate",high:"High",notReported:"Not reported",location:"Location",noData:"This value was not supplied by the API response.",fetchError:"Unable to fetch air quality data.",early:"Early morning or after rain",directions:["North","North-east","East","South-east","South","South-west","West","North-west"]},
+  hi: {good:"अच्छा",moderate:"मध्यम",high:"अधिक",notReported:"जानकारी उपलब्ध नहीं है",location:"स्थान",noData:"API के उत्तर में यह जानकारी उपलब्ध नहीं है।",fetchError:"वायु गुणवत्ता की जानकारी नहीं मिल सकी।",early:"सुबह जल्दी या बारिश के बाद",directions:["उत्तर","उत्तर-पूर्व","पूर्व","दक्षिण-पूर्व","दक्षिण","दक्षिण-पश्चिम","पश्चिम","उत्तर-पश्चिम"]}
+};
+function t(key) { return (localized[selectedLanguage] || localized.en)[key] || localized.en[key] || key; }
 
-function t(key) {
-
-    return translations[currentLanguage][key]
-        || translations.en[key]
-        || key;
-
+function aqiSeverityClass(aqi) {
+  if (aqi <= 50) return "good";
+  if (aqi <= 100) return "moderate";
+  if (aqi <= 150) return "unhealthy";
+  if (aqi <= 200) return "very-unhealthy";
+  return "hazardous";
+}
+function pollutantSeverityClass(value, info, type) {
+  if (value == null || type === "smog") return "moderate";
+  if (value <= info.healthy) return "good";
+  if (value <= info.moderate) return "moderate";
+  if (value <= info.moderate * 1.5) return "unhealthy";
+  if (value <= info.moderate * 2) return "very-unhealthy";
+  return "hazardous";
+}
+function preferredVoice(locale) {
+  const voices = speechSynthesis.getVoices();
+  const target = locale.toLowerCase();
+  const language = target.split("-")[0];
+  return voices.find(voice => voice.lang.toLowerCase() === target) ||
+    voices.find(voice => voice.lang.toLowerCase().startsWith(`${language}-`)) || null;
 }
 
+function displayPollutantInfo(type, info) { return info; }
 
-/* =========================================================
-   LANGUAGE
-========================================================= */
-
-function changeLanguage() {
-
-    currentLanguage =
-        document.getElementById("languageSelect").value;
-
-    updateInterfaceText();
-
-    if (currentAQIData) {
-
-        renderAQIData(currentAQIData);
-
-    }
-
-    /*
-       If speech is currently running, stop it so that
-       changing languages doesn't cause overlapping speech.
-    */
-
-    if (isReading) {
-
-        stopReadAloud();
-
-    }
-
+function applyLanguage(language) {
+  selectedLanguage = languageSettings[language] ? language : "en";
+  const copy = languageSettings[selectedLanguage];
+  const words = fullCopy[selectedLanguage];
+  document.documentElement.lang = selectedLanguage;
+  document.querySelector(".brand").lastChild.textContent = words.brand;
+  document.querySelector(".hero .eyebrow").textContent = words.hero;
+  document.querySelector(".hero h1").innerHTML = words.title;
+  document.querySelector(".hero h1 + p").textContent = words.intro;
+  $("cityInput").placeholder = copy.cityPlaceholder;
+  $("check").textContent = copy.check;
+  document.querySelector(".search-card > label").textContent = copy.searchLabel;
+  document.querySelector(".search-card .hint").textContent = copy.hint;
+  document.querySelector(".hero > div:last-child h3").textContent = copy.elsewhere;
+  $("back").textContent = copy.back;
+  document.querySelector(".results-head .eyebrow").textContent = words.report;
+  if (!currentData) { $("location").textContent=words.yourCity; $("updated").textContent=words.waiting; $("aqiStatus").textContent=words.pending; }
+  document.querySelector(".aqi-card .eyebrow").textContent=words.aqi;
+  document.querySelector(".best b").textContent=words.best;
+  document.querySelector(".best .sub").textContent=words.better;
+  $("mapLink").textContent=words.map;
+  document.querySelector(".wind-card .eyebrow").textContent=words.wind;
+  if (!currentData) $("windDirection").textContent=words.windNone;
+  const headings=document.querySelectorAll(".section-title h3"), notes=document.querySelectorAll(".section-title .sub"); headings[0].textContent=words.what; notes[0].textContent=words.each; headings[1].textContent=words.hourly; notes[1].textContent=words.pattern;
+  document.querySelector(".main-detail .eyebrow").textContent=words.concern; document.querySelector(".main-detail > div:last-child b").textContent=words.means;
+  if (!currentData) { $("effect").textContent=words.identify; $("hourly").textContent=words.hourlyWait; }
+  document.querySelector(".clinic b").textContent=words.help; document.querySelector(".clinic .sub").textContent=words.helpText; document.querySelector(".clinic a").textContent=words.clinic;
+  const themeButtons=document.querySelectorAll(".theme-menu button"); themeButtons[0].textContent=words.sky; themeButtons[1].textContent=words.water; themeButtons[2].textContent=words.forest; themeButtons[3].textContent=words.contrast;
+  /* Re-render existing results so a language change translates live content too. */
+  if (currentData) renderAirData(currentData);
+  else renderFeaturedLocations({});
 }
-
-
-function updateInterfaceText() {
-
-    document.getElementById("heroTitle").innerHTML =
-        t("heroTitle");
-
-    document.getElementById("heroSubtitle").innerText =
-        t("heroSubtitle");
-
-    document.getElementById("cityLabel").innerText =
-        t("cityLabel");
-
-    document.getElementById("cityInput").placeholder =
-        t("placeholder");
-
-    document.getElementById("locationsTitle").innerText =
-        t("locationsTitle");
-
-    // Translate location cards
-    document.getElementById("mumbaiCity").innerText =
-        t("mumbaiCity");
-
-    document.getElementById("puneCity").innerText =
-        t("puneCity");
-
-    document.querySelectorAll(".maharashtraState").forEach(
-        element => {
-            element.innerText = t("maharashtraState");
-        }
-    );
-    document.getElementById("getAQIButton").innerText =
-        t("getAQI");
-
-    document.getElementById("aqiLabel").innerText =
-        t("aqiLabel");
-
-    document.getElementById("bestTimeTitle").innerText =
-        t("bestTime");
-
-    document.getElementById("bestTimeDescription").innerText =
-        t("bestDescription");
-
-    document.getElementById("pollutantsTitle").innerText =
-        t("pollutants");
-
-    document.getElementById("mainPollutantSentence").innerText =
-        t("mainSentence");
-
-    document.getElementById("contributionLabel").innerText =
-        t("contribution");
-
-    document.getElementById("effectsTitle").innerText =
-        t("whyMatters");
-
-    document.getElementById("hourlyTitle").innerText =
-        t("hourly");
-
-    document.getElementById("textSizeButton").innerText =
-        t("biggerText");
-
-    document.getElementById("contrastButton").innerText =
-        t("contrast");
-
-    document.getElementById("readButton").innerText =
-        isReading ? t("stopRead") : t("read");
-
-    document.getElementById("notificationTitle").innerText =
-        t("notification");
-
-}
-
-
-/* =========================================================
-   CITY SEARCH — INDIA ONLY
-========================================================= */
-
-const cityInput =
-    document.getElementById("cityInput");
-
-const suggestions =
-    document.getElementById("suggestions");
-
-let searchTimeout;
-
-
-cityInput.addEventListener("input", function() {
-
-    clearTimeout(searchTimeout);
-
-    const query =
-        cityInput.value.trim();
-
-    if (query.length < 2) {
-
-        suggestions.innerHTML = "";
-
-        return;
-
-    }
-
-    searchTimeout =
-        setTimeout(
-            () => searchCities(query),
-            350
-        );
-
-});
-
-
-async function searchCities(query) {
-
-    suggestions.innerHTML =
-        `<div class="suggestion">
-            ${t("suggestionLoading")}
-        </div>`;
-
-
-    try {
-
-        /*
-           countryCode=IN is the important part here.
-
-           Open-Meteo will return only locations
-           belonging to India.
-        */
-
-        let searchQuery = query;
-
-        if (currentLanguage === "mr") {
-            const marathiCityMap = {
-                "मुंबई": "Mumbai",
-                "पुणे": "Pune",
-                "ठाणे": "Thane",
-                "नागपूर": "Nagpur",
-                "नाशिक": "Nashik",
-                "छत्रपती संभाजीनगर": "Chhatrapati Sambhajinagar",
-                "औरंगाबाद": "Aurangabad",
-                "कोल्हापूर": "Kolhapur",
-                "सोलापूर": "Solapur",
-                "अमरावती": "Amravati",
-                "सातारा": "Satara",
-                "रत्नागिरी": "Ratnagiri",
-                "अकोला": "Akola",
-                "नांदेड": "Nanded",
-                "लातूर": "Latur",
-                "जळगाव": "Jalgaon"
-            };
-
-            searchQuery = marathiCityMap[query.trim()] || query;
-        }
-
-        console.log("ORIGINAL QUERY:", query);
-        console.log("SEARCH QUERY:", searchQuery);
-
-        const url =
-            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=10&language=en&format=json&countryCode=IN`;
-
-
-        const response =
-            await fetch(url);
-
-        const data =
-            await response.json();
-
-
-        suggestions.innerHTML = "";
-
-
-        if (!data.results || data.results.length === 0) {
-
-            suggestions.innerHTML =
-                `<div class="suggestion">
-                    ${t("noSuggestions")}
-                </div>`;
-
-            return;
-
-        }
-
-
-        /*
-           Additional safety filter:
-           only show results whose country code
-           is explicitly IN.
-        */
-
-        console.log("SEARCH QUERY:", selectedCity);
-        console.log("LANGUAGE:", currentLanguage);
-        console.log("GEOCODING RESULTS:", data.results);
-
-        const indianResults =
-            data.results.filter(
-                place =>
-                    place.country_code === "IN"
-            );
-
-
-        if (indianResults.length === 0) {
-
-            suggestions.innerHTML =
-                `<div class="suggestion">
-                    ${t("noSuggestions")}
-                </div>`;
-
-            return;
-
-        }
-
-
-        indianResults.forEach(place => {
-
-            const div =
-                document.createElement("div");
-
-            div.className =
-                "suggestion";
-
-
-            const state =
-                place.admin1
-                    ? `, ${place.admin1}`
-                    : "";
-
-
-            div.innerHTML = `
-                <strong>${place.name}</strong>
-                <br>
-                <small>
-                    ${state}, India
-                </small>
-            `;
-
-
-            div.onclick = function() {
-
-                selectedCity =
-                    place.name;
-
-                cityInput.value =
-                    place.name;
-
-                suggestions.innerHTML =
-                    "";
-
-                fetchAQIData();
-
-            };
-
-
-            suggestions.appendChild(div);
-
-        });
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        suggestions.innerHTML = "";
-
-    }
-
-}
-
-
-/* =========================================================
-   QUICK CITY SELECTION
-========================================================= */
-
-function selectCity(city) {
-
-    selectedCity =
-        city;
-
-    cityInput.value =
-        city;
-
-    suggestions.innerHTML =
-        "";
-
-    fetchAQIData();
-
-}
-
-
-/* =========================================================
-   FETCH DATA FROM PYTHON / FLASK
-========================================================= */
-
-async function fetchAQIData() {
-
-    const city =
-        cityInput.value.trim()
-        || selectedCity;
-
-
-    if (!city) return;
-
-
-    selectedCity =
-        city;
-
-
-    document.getElementById("aqiStatus")
-        .innerText =
-        "Loading...";
-
-
-    try {
-
-        const response =
-        await fetch(
-        `/api/air-quality?city=${encodeURIComponent(selectedCity)}&language=${encodeURIComponent(currentLanguage)}`
-        );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "API request failed"
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        currentAQIData =
-            data;
-
-
-
-        renderAQIData(data);
-
-        // Update the scale bar marker automatically using the fetched AQI value
-        const aqiValue = getValue(data, ['aqi', 'AQI', 'us_aqi', 'air_quality']);
-        if (aqiValue !== null) {
-            updateAQIMeter(aqiValue);
-      applyAQIFontColors(aqiValue, ['.aqi-score', '#aqiStatus', '.pollutant-value']);
-        }
-
-    } catch (error) {
-
-        console.error(error);
-
-
-        document.getElementById("aqiStatus")
-            .innerText =
-            t("error");
-
-
-        document.getElementById("notificationText")
-            .innerText =
-            t("error");
-
-    }
-
-}
-
-
-/* =========================================================
-   GET VALUE
-========================================================= */
-
-function getValue(data, names) {
-
-    for (const name of names) {
-
-        if (
-            data[name] !== undefined &&
-            data[name] !== null &&
-            !isNaN(Number(data[name]))
-        ) {
-            return Number(data[name]);
-        }
-
-
-        if (
-            data.current &&
-            data.current[name] !== undefined &&
-            !isNaN(Number(data.current[name]))
-        ) {
-            return Number(
-                data.current[name]
-            );
-        }
-
-
-        if (
-            data.pollutants &&
-            Array.isArray(data.pollutants)
-        ) {
-
-            const pollutant =
-                data.pollutants.find(
-                    p => p.name === name
-                );
-
-            if (
-                pollutant &&
-                pollutant.value !== undefined &&
-                !isNaN(Number(pollutant.value))
-            ) {
-                return Number(
-                    pollutant.value
-                );
-            }
-        }
-    }
-
-    return null;
-}
-
-
-/* =========================================================
-   POLLUTANT INFORMATION
-========================================================= */
 
 const pollutantInfo = {
-
-    pm25: {
-        name: "PM2.5",
-        keys: ["pm2_5","pm25","PM2.5","PM25"],
-        healthy: 15,
-        moderate: 35
-    },
-
-    pm10: {
-        name: "PM10",
-        keys: ["pm10","PM10"],
-        healthy: 45,
-        moderate: 100
-    },
-
-    ozone: {
-        name: "O₃",
-        keys: ["ozone","o3","O3"],
-        healthy: 100,
-        moderate: 160
-    },
-
-    no2: {
-        name: "NO₂",
-        keys: ["nitrogen_dioxide","no2","NO2"],
-        healthy: 40,
-        moderate: 100
-    },
-
-    so2: {
-        name: "SO₂",
-        keys: ["sulphur_dioxide","sulfur_dioxide","so2","SO2"],
-        healthy: 40,
-        moderate: 100
-    },
-
-    co: {
-        name: "CO",
-        keys: ["carbon_monoxide","co","CO"],
-        healthy: 4000,
-        moderate: 10000
-    }
-
+  pm25:{name:"PM2.5",keys:["pm2_5","pm25","PM2.5"],healthy:15,moderate:35,effect:"Tiny particles can travel deep into the lungs.",advice:["Low today — normal outdoor plans are comfortable.","Sensitive lungs may notice this. Keep difficult outdoor exercise shorter.","Limit outdoor activity and consider a well-fitting mask."]},
+  pm10:{name:"PM10",keys:["pm10","PM10"],healthy:45,moderate:100,effect:"Dust can irritate eyes, throat, and upper airways.",advice:["Dust levels are low.","Avoid dusty roads if you are sensitive.","Avoid dusty routes and vigorous activity."]},
+  ozone:{name:"O₃ / Ozone",keys:["ozone","o3","O3"],healthy:100,moderate:160,effect:"Ozone can inflame airways in hot sunny weather.",advice:["Ozone is low.","Exercise in morning or evening.","Stay indoors during the afternoon."]},
+  no2:{name:"NO₂",keys:["nitrogen_dioxide","no2","NO2"],healthy:40,moderate:100,effect:"Traffic-related NO₂ can worsen cough and asthma.",advice:["Traffic gas exposure is low.","Choose quieter roads.","Avoid busy-road exercise."]},
+  so2:{name:"SO₂",keys:["sulfur_dioxide","sulphur_dioxide","so2","SO2"],healthy:40,moderate:100,effect:"SO₂ can tighten airways and irritate the throat.",advice:["SO₂ is low.","People with asthma should reduce exertion.","Stay indoors where possible."]},
+  co:{name:"CO",keys:["carbon_monoxide","co","CO"],healthy:4000,moderate:10000,effect:"CO lowers the blood’s ability to carry oxygen.",advice:["CO is low.","Avoid enclosed vehicle-heavy areas.","Move to fresh air if dizzy or nauseated."]},
+  smog:{name:"Smog warning",keys:["smog","smog_warning","haze"],healthy:0,moderate:1,effect:"Smog is pollution mixed with haze.",advice:["No significant smog warning.","Haze is present; reduce long outdoor activity.","Stay indoors where possible."]}
 };
 
+function getValue(data, keys) {
+  for (const key of keys) {
+    for (const source of [data, data?.current, data?.pollutants, data?.air_quality]) {
+      if (!source) continue;
 
-/* =========================================================
-   STATUS
-========================================================= */
+      if (Array.isArray(source)) {
+        const item = source.find(x => x.name === key || x.key === key);
+        if (item?.value != null && !isNaN(Number(item.value))) return Number(item.value);
+      }
 
-function pollutantStatus(value,info) {
-
-    if (value === null) {
-
-        return {
-            label: "--",
-            className: ""
-        };
-
+      if (source[key] != null && !isNaN(Number(source[key]))) return Number(source[key]);
     }
+  }
 
-
-    if (value <= info.healthy) {
-
-        return {
-            label: t("healthy"),
-            className: "healthy"
-        };
-
-    }
-
-
-    if (value <= info.moderate) {
-
-        return {
-            label: t("moderate"),
-            className: "moderate"
-        };
-
-    }
-
-
-    return {
-        label: t("unhealthy"),
-        className: "unhealthy"
-    };
-
+  return null;
 }
 
-
-/* =========================================================
-   POLLUTANT ADVICE
-========================================================= */
-
-function getPollutantAdvice(type,value) {
-
-    if (value === null) return "";
-
-    const info =
-        pollutantInfo[type];
-
-    const healthy =
-        value <= info.healthy;
-
-
-    const keyMap = {
-
-        pm25:
-            healthy
-                ? "pm25AdviceHealthy"
-                : "pm25AdviceBad",
-
-        pm10:
-            healthy
-                ? "pm10AdviceHealthy"
-                : "pm10AdviceBad",
-
-        ozone:
-            healthy
-                ? "ozoneAdviceHealthy"
-                : "ozoneAdviceBad",
-
-        no2:
-            healthy
-                ? "no2AdviceHealthy"
-                : "no2AdviceBad",
-
-        so2:
-            healthy
-                ? "so2AdviceHealthy"
-                : "so2AdviceBad",
-
-        co:
-            healthy
-                ? "coAdviceHealthy"
-                : "coAdviceBad"
-
-    };
-
-
-    return t(
-        keyMap[type]
-    );
-
-}
-
-
-/* =========================================================
-   MAIN POLLUTANT DESCRIPTION
-========================================================= */
-
-function getMainPollutantDescription(type) {
-
-    const keys = {
-
-        pm25: "mainPM25",
-        pm10: "mainPM10",
-        ozone: "mainO3",
-        no2: "mainNO2",
-        so2: "mainSO2",
-        co: "mainCO"
-
-    };
-
-
-    return t(
-        keys[type]
-    );
-
-}
-
-
-/* =========================================================
-   RENDER AQI
-========================================================= */
-
-function renderAQIData(data) {
-
-    const aqi =
-        getValue(
-            data,
-            [
-                "aqi",
-                "AQI",
-                "us_aqi",
-                "air_quality_index"
-            ]
-        );
-
-
-    if (aqi !== null) {
-
-        document.getElementById("aqiValue")
-            .innerText =
-            Math.round(aqi);
-
-
-        let status;
-
-
-        if (aqi <= 50) {
-
-            status =
-                t("healthy");
-
-        }
-
-        else if (aqi <= 100) {
-
-            status =
-                t("moderate");
-
-        }
-
-        else {
-
-            status =
-                t("unhealthy");
-
-        }
-
-
-        document.getElementById("aqiStatus")
-            .innerText =
-            status;
-
+function pollutantStatus(value, info, type) {
+  if (type === "smog") {
+    if (typeof value === "string") {
+      value = /clear|none|low/i.test(value) ? 0 : /high|severe|alert/i.test(value) ? 2 : 1;
     }
 
+    if (value <= 0) return [t("good"), "good", 0];
+    if (value <= 1) return [t("moderate"), "moderate", 1];
+    return [t("high"), "bad", 2];
+  }
 
-    /* LOCATION */
-
-    const locationName =
-        data.city ||
-        data.location ||
-        data.name ||
-        selectedCity;
-
-
-    const state =
-        data.state ||
-        data.admin1 ||
-        "";
-
-
-    document.getElementById("locTitle")
-        .innerText =
-        `📍 ${locationName}${state ? ", " + state : ""}`;
-
-
-    /* POLLUTANTS */
-
-    const pollutantValues = {};
-
-
-    Object.keys(pollutantInfo)
-        .forEach(type => {
-
-            pollutantValues[type] =
-                getValue(
-                    data,
-                    pollutantInfo[type].keys
-                );
-
-        });
-
-
-    renderPollutantCards(
-        pollutantValues
-    );
-
-
-    renderMainPollutant(data);
-
-
-    renderHourlyData(data);
-
-    calculateBestTime(data);
-
-    updateNotification(aqi);
-
+  if (value <= info.healthy) return [t("good"), "good", 0];
+  if (value <= info.moderate) return [t("moderate"), "moderate", 1];
+  return [t("high"), "bad", 2];
 }
 
-function getPollutantValue(data, pollutantName) {
-
-    if (!data || !data.pollutants) {
-        return null;
+function nearbyLocationCopy(className) {
+  const copy = {
+    en: {
+      good: ["Good", "Air quality is healthy. Outdoor plans are suitable for most people."],
+      moderate: ["Moderate", "Air quality is moderate. Sensitive people should reduce prolonged outdoor exertion."],
+      bad: ["Unhealthy", "Air quality is unhealthy. Reduce strenuous outdoor activity and consider a well-fitting mask."]
+    },
+    hi: {
+      good: ["अच्छा", "वायु गुणवत्ता अच्छी है। अधिकांश लोगों के लिए बाहर की गतिविधियाँ उपयुक्त हैं।"],
+      moderate: ["मध्यम", "वायु गुणवत्ता मध्यम है। संवेदनशील लोगों को लंबे समय तक बाहर परिश्रम कम करना चाहिए।"],
+      bad: ["अस्वस्थ", "वायु गुणवत्ता अस्वस्थ है। बाहर कठिन गतिविधि कम करें और अच्छी तरह फिट होने वाला मास्क पहनने पर विचार करें।"]
     }
-
-    const pollutantMap = {
-        "PM2.5": "pm2_5",
-        "PM10": "pm10",
-        "O₃": "ozone",
-        "O3": "ozone",
-        "NO₂": "nitrogen_dioxide",
-        "NO2": "nitrogen_dioxide",
-        "SO₂": "sulfur_dioxide",
-        "SO2": "sulfur_dioxide",
-        "CO": "carbon_monoxide"
-    };
-
-    const apiKey = pollutantMap[pollutantName];
-
-    if (!apiKey) {
-        console.log("NO API KEY FOR:", pollutantName);
-        return null;
-    }
-
-    const value = data.pollutants[apiKey];
-
-    console.log("LOOKING FOR:", pollutantName);
-    console.log("API KEY:", apiKey);
-    console.log("VALUE:", value);
-
-    return value !== undefined && value !== null
-        ? Number(value)
-        : null;
+  };
+  return (copy[selectedLanguage] || copy.en)[className];
 }
 
-/* =====================================================
-   MAIN POLLUTANT
-===================================================== */
+function locationBand(location) {
+  const aqi = Number(location.aqi ?? location.AQI ?? location.air_quality_index);
+  if (Number.isFinite(aqi)) return aqi <= 50 ? "good" : aqi <= 100 ? "moderate" : "bad";
+  const label = String(location.status || location.category || "").toLowerCase();
+  return label.includes("moderate") ? "moderate" : label.includes("unhealthy") || label.includes("bad") || label.includes("hazard") ? "bad" : "good";
+}
+
+function renderFeaturedLocations(data) {
+  const supplied = Array.isArray(data?.featured_locations) ? data.featured_locations :
+    Array.isArray(data?.nearby_locations) ? data.nearby_locations : [];
+  const locations = supplied.filter(location => location && (location.city || location.name)).slice(0, 3);
+
+  if (!locations.length) {
+    $("cityGrid").innerHTML = Array.from({length: 3}, () => `
+      <article class="city-card" aria-busy="true">
+        <strong>${selectedLanguage === "hi" ? "लाइव स्थान लोड हो रहे हैं" : "Loading live locations"}</strong>
+        <p>${selectedLanguage === "hi" ? "Python API से आसपास के स्थानों की वायु गुणवत्ता आने की प्रतीक्षा है।" : "Waiting for nearby air-quality data from the Python API."}</p>
+      </article>`).join("");
+    return;
+  }
+
+  $("cityGrid").innerHTML = locations.map(location => {
+    const className = locationBand(location);
+    const [status, defaultAdvice] = nearbyLocationCopy(className);
+    const aqi = Number(location.aqi ?? location.AQI ?? location.air_quality_index);
+    const aqiLabel = Number.isFinite(aqi) ? ` · AQI ${Math.round(aqi)}` : "";
+    return `<article class="city-card">
+      <strong>${location.city || location.name}</strong>
+      <span class="tag ${className}">${location.status || status}${aqiLabel}</span>
+      <p>${location.message || location.recommendation || location.advice || defaultAdvice}</p>
+    </article>`;
+  }).join("");
+}
+
+function renderPollutants(values) {
+  $("pollutants").innerHTML = "";
+
+  Object.entries(pollutantInfo).forEach(([type, info]) => {
+    const displayInfo = displayPollutantInfo(type, info);
+    const value = values[type];
+    const missing = value === null || value === undefined;
+    const status = missing ? [t("notReported"), "moderate", 1] : pollutantStatus(value, info, type);
+
+    const display = missing ? "—" : type === "smog" ? status[0] : Number(value).toFixed(1);
+    const unit = type === "smog" ? "visibility risk" : "µg/m³";
+    const severity = pollutantSeverityClass(value, info, type);
+
+    $("pollutants").innerHTML += `
+      <article class="pollutant">
+        <div class="pollutant-name">${displayInfo.name}</div>
+        <div class="pollutant-value pollutant-number-${severity}">${display}</div>
+        <div class="unit">${unit}</div>
+        <span class="tag ${status[1]}">${status[0]}</span>
+        <p class="advice">${missing ? t("noData") : displayInfo.advice[status[2]]}</p>
+      </article>
+    `;
+  });
+}
 
 function renderMainPollutant(data) {
 
-    const mainPollutant = data.mainPollutant;
+    const winner = data.mainPollutant;
+
+    if (!winner) {
+        $("mainPollutant").textContent = "—";
+        $("contribution").textContent = "—";
+        $("effect").textContent = "We will identify the main pollutant.";
+        $("mainAdvice").textContent = "";
+        return;
+    }
+
     const contribution = data.mainPollutantContribution;
 
-    // Main pollutant name
-    document.getElementById("mainPollutant").innerText =
-        mainPollutant || "--";
+    $("mainPollutant").textContent = winner;
 
-    // Contribution percentage
-    document.getElementById("contributionVal").innerText =
+    $("contribution").textContent =
         contribution != null
-            ? contribution + "%"
-            : "--";
+            ? Math.round(contribution) + "% of reported pollutant load"
+            : "—";
 
-    // Convert pollutant name to internal type
-    const pollutantTypeMap = {
-        "PM2.5": "pm25",
-        "PM10": "pm10",
-        "O3": "ozone",
-        "NO2": "no2",
-        "SO2": "so2",
-        "CO": "co"
+    const descriptions = {
+        "PM2.5": "Fine particles can penetrate deep into the lungs and affect breathing.",
+        "PM10": "Coarse particles can irritate the nose, throat and lungs.",
+        "O₃": "Ozone can irritate the airways and make breathing uncomfortable.",
+        "Ozone": "Ozone can irritate the airways and make breathing uncomfortable.",
+        "NO₂": "Nitrogen dioxide can irritate the airways, especially during outdoor activity.",
+        "SO₂": "Sulfur dioxide can irritate the respiratory system.",
+        "CO": "Carbon monoxide reduces the amount of oxygen that can be carried in the blood."
     };
 
-    const type = pollutantTypeMap[mainPollutant];
+    const advice = {
+        "PM2.5": "Consider reducing prolonged outdoor activity when levels are elevated.",
+        "PM10": "If levels are elevated, reduce prolonged outdoor activity.",
+        "O₃": "Avoid prolonged outdoor exertion when ozone levels are high.",
+        "Ozone": "Avoid prolonged outdoor exertion when ozone levels are high.",
+        "NO₂": "Reduce prolonged exposure near busy roads when levels are elevated.",
+        "SO₂": "Reduce prolonged outdoor exposure when levels are elevated.",
+        "CO": "Avoid poorly ventilated areas when carbon monoxide levels are elevated."
+    };
 
-    console.log("MAIN POLLUTANT:", mainPollutant);
-    console.log("POLLUTANT TYPE:", type);
-    console.log("POLLUTANT VALUE:", getPollutantValue(data, mainPollutant));
-    console.log("ADVICE:", getPollutantAdvice(type, getPollutantValue(data, mainPollutant)));
+    $("effect").textContent =
+        descriptions[winner] || "This pollutant is currently the main reported concern.";
 
-    // Show why the main pollutant matters
-    const effects =
-        document.getElementById("pollutantEffects");
-
-    effects.innerHTML = "";
-
-    if (type) {
-
-        const li = document.createElement("li");
-
-        li.innerText =
-            getMainPollutantDescription(type);
-
-        effects.appendChild(li);
-    }
-
-    // Show advice for the main pollutant
-    const advice =
-        document.getElementById("mainPollutantAdvice");
-
-    if (type) {
-
-        advice.innerText =
-            getPollutantAdvice(
-                type,
-                getPollutantValue(data, mainPollutant)
-            );
-
-    } else {
-
-        advice.innerText = "";
-    }
+    $("mainAdvice").textContent =
+        advice[winner] || "Use the pollutant reading above to guide your outdoor plans.";
 }
 
-/* =========================================================
-   POLLUTANT CARDS
-========================================================= */
+function renderAirData(data) {
+  const aqi = getValue(data, ["aqi", "AQI", "us_aqi", "air_quality_index", "air_quality"]);
+  const city = data.city || data.location || data.name || selectedCity;
+  const state = data.state || data.admin1 || selectedPlace?.admin1 || "";
 
-function renderPollutantCards(values) {
+  const mapQuery = encodeURIComponent(`${city} ${state} India`);
 
-    const grid =
-        document.getElementById(
-            "pollutantsGrid"
-        );
+  $("location").textContent = city + (state ? `, ${state}` : "");
+  $("mapCity").textContent = city;
+  $("updated").textContent = fullCopy[selectedLanguage].live + " • " + new Date().toLocaleString(languageSettings[selectedLanguage].locale);
+  $("map").src = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
+  $("mapLink").href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
 
+  $("aqi").textContent = aqi == null ? "—" : Math.round(aqi);
+  $("aqi").className = `aqi aqi-number-${aqi == null ? "moderate" : aqiSeverityClass(aqi)}`;
 
-    grid.innerHTML = "";
+  const aqiStatus = aqi <= 50 ? [t("good"), "good"] : aqi <= 100 ? [t("moderate"), "moderate"] : [t("high"), "bad"];
+  $("aqiStatus").textContent = aqiStatus[0];
+  $("aqiStatus").className = "status " + aqiStatus[1];
+  $("pointer").style.left = `${Math.min(100, Math.max(0, (aqi || 0) / 300 * 100))}%`;
 
+  $("best").textContent = data.best_time || t("early");
 
-    Object.keys(pollutantInfo)
-        .forEach(type => {
+  const windSpeed = getValue(data, ["wind_speed", "windspeed", "windSpeed", "wind_speed_10m"]);
+  const windDirection = getValue(data, ["wind_direction", "winddirection", "windDirection", "wind_direction_10m"]);
+  const directionNames = t("directions");
 
-            const info =
-                pollutantInfo[type];
+  $("windSpeed").textContent = windSpeed == null ? "—" : `${Number(windSpeed).toFixed(1)} km/h`;
+  $("windDirection").textContent =
+    windDirection == null
+      ? fullCopy[selectedLanguage].windNone
+      : `${directionNames[Math.round(windDirection / 45) % 8]} (${Math.round(windDirection)}°)`;
 
-            const value =
-                values[type];
+  $("windArrow").style.transform = `rotate(${windDirection || 0}deg)`;
 
+  const values = {};
 
-            if (value === null) return;
+  Object.entries(pollutantInfo).forEach(([type, info]) => {
+    values[type] = getValue(data, info.keys);
+  });
 
+  if (values.smog == null && aqi != null) {
+    values.smog = aqi > 150 ? 2 : aqi > 80 ? 1 : 0;
+  }
 
-            const status =
-                pollutantStatus(
-                    value,
-                    info
-                );
+  renderFeaturedLocations(data);
+  renderPollutants(values);
+  renderMainPollutant(data);
 
+  const hourly = data.hourly?.aqi || [];
+  const times = data.hourly?.time || [];
 
-            const card =
-                document.createElement("div");
-
-
-            card.className =
-                "pollutant-card";
-
-
-            card.innerHTML = `
-
-                <div class="pollutant-name">
-                    ${info.name}
-                </div>
-
-                <div class="pollutant-value">
-                    ${Number(value).toFixed(1)}
-                </div>
-
-                <div class="pollutant-unit">
-                    μg/m³
-                </div>
-
-                <div class="pollutant-status ${status.className}">
-                    ${status.label}
-                </div>
-
-                <div class="pollutant-advice">
-                    ${getPollutantAdvice(type,value)}
-                </div>
-
-            `;
-
-
-            grid.appendChild(card);
-
-        });
-
+  $("hourly").innerHTML = hourly.length
+    ? hourly.slice(0, 24).map((value, index) => `
+        <span class="hour">
+          <b>${Math.round(value)}</b>
+          <i style="height:${Math.min(105, Math.max(8, Number(value) * .7))}px"></i>
+          ${times[index]
+            ? new Date(times[index]).toLocaleTimeString([], {
+                hour: "numeric"
+              })
+            : `${index}:00`
+          }
+        </span>
+      `).join("")
+    : fullCopy[selectedLanguage].noHourly;
 }
 
-
-/* =========================================================
-   DYNAMIC MAIN POLLUTANT
-========================================================= */
-
-function determineMainPollutant(values) {
-
-    let mainType = null;
-    let highestScore = -1;
-
-
-    Object.keys(pollutantInfo)
-        .forEach(type => {
-
-            const value =
-                values[type];
-
-
-            if (value === null) return;
-
-
-            const info =
-                pollutantInfo[type];
-
-
-            const score =
-                value / info.healthy;
-
-
-            if (score > highestScore) {
-
-                highestScore =
-                    score;
-
-                mainType =
-                    type;
-
-            }
-
-        });
-
-
-    if (!mainType) {
-
-        document.getElementById(
-            "mainPollutant"
-        ).innerText =
-            "--";
-
-        return;
-
-    }
-
-
-    const info =
-        pollutantInfo[mainType];
-
-    const value =
-        values[mainType];
-
-
-    document.getElementById(
-        "mainPollutant"
-    ).innerText =
-        info.name;
-
-
-    const allValues =
-        Object.values(values)
-            .filter(
-                v =>
-                    v !== null &&
-                    v > 0
-            );
-
-
-    const total =
-        allValues.reduce(
-            (sum,value) =>
-                sum + value,
-            0
-        );
-
-
-    let contribution = 0;
-
-
-    if (total > 0) {
-
-        contribution =
-            Math.round(
-                (value / total) * 100
-            );
-
-    }
-
-
-    document.getElementById(
-        "contributionVal"
-    ).innerText =
-        contribution + "%";
-
-
-    const effects =
-        document.getElementById(
-            "pollutantEffects"
-        );
-
-
-    effects.innerHTML = "";
-
-
-    const li =
-        document.createElement("li");
-
-
-    li.innerText =
-        getMainPollutantDescription(
-            mainType
-        );
-
-
-    effects.appendChild(li);
-
-
-    document.getElementById(
-        "mainPollutantAdvice"
-    ).innerText =
-        getPollutantAdvice(
-            mainType,
-            value
-        );
-
-}
-
-
-/* =========================================================
-   HOURLY AQI
-========================================================= */
-
-function renderHourlyData(data) {
-
-    const bar =
-        document.getElementById(
-            "hourlyBar"
-        );
-
-
-    bar.innerHTML = "";
-
-
-    let hourlyAQI = null;
-
-
-    if (
-        data.hourly &&
-        Array.isArray(
-            data.hourly.aqi
-        )
-    ) {
-
-        hourlyAQI =
-            data.hourly.aqi;
-
-    }
-
-    else if (
-        data.hourly &&
-        Array.isArray(
-            data.hourly.us_aqi
-        )
-    ) {
-
-        hourlyAQI =
-            data.hourly.us_aqi;
-
-    }
-
-    else if (
-        Array.isArray(data.hourly)
-    ) {
-
-        hourlyAQI =
-            data.hourly.map(item => item.aqi);
-
-    }
-
-
-    if (!hourlyAQI) return;
-
-
-    hourlyAQI
-        .slice(0,24)
-        .forEach(
-            (value,index) => {
-
-                if (
-                    value === null ||
-                    value === undefined ||
-                    isNaN(value)
-                ) return;
-
-
-                const item =
-                    document.createElement(
-                        "div"
-                    );
-
-                item.className =
-                    "hour-item";
-
-
-                const number =
-                    document.createElement(
-                        "div"
-                    );
-
-                number.className =
-                    "hour-number";
-
-                number.innerText =
-                    Math.round(value);
-
-
-                const barValue =
-                    document.createElement(
-                        "div"
-                    );
-
-                barValue.className =
-                    "hour-value";
-
-
-                const height =
-                    Math.min(
-                        110,
-                        Math.max(
-                            8,
-                            Number(value) * 1.1
-                        )
-                    );
-
-
-                barValue.style.height =
-                    height + "px";
-
-
-                const label =
-                    document.createElement(
-                        "div"
-                    );
-
-                label.className =
-                    "hour-label";
-
-                label.innerText =
-                    index + ":00";
-
-
-                item.appendChild(number);
-                item.appendChild(barValue);
-                item.appendChild(label);
-
-
-                bar.appendChild(item);
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   BEST TIME
-========================================================= */
-
-function calculateBestTime(data) {
-
-    if (data.best_time) {
-
-        document.getElementById(
-            "bestTime"
-        ).innerText =
-            data.best_time;
-
-        return;
-
-    }
-
-
-    document.getElementById(
-        "bestTime"
-    ).innerText =
-        "Early morning";
-
-}
-
-
-/* =========================================================
-   NOTIFICATION
-========================================================= */
-
-function updateNotification(aqi) {
-
-    if (aqi === null) return;
-
-
-    let message;
-
-
-    if (aqi <= 50) {
-
-        message =
-            t("healthyAdvice");
-
-    }
-
-    else if (aqi <= 100) {
-
-        message =
-            t("moderateAdvice");
-
-    }
-
-    else {
-
-        message =
-            t("unhealthyAdvice");
-
-    }
-
-
-    document.getElementById(
-        "notificationText"
-    ).innerText =
-        message;
-
-}
-
-
-/* =========================================================
-   NOTIFICATION PANEL
-========================================================= */
-
-function toggleNotifications() {
-
-    document
-        .getElementById(
-            "notificationPanel"
-        )
-        .classList.toggle("show");
-
-}
-
-
-/* =========================================================
-   BIGGER TEXT
-========================================================= */
-
-function toggleLargeText() {
-
-    document.body
-        .classList.toggle(
-            "large-text"
-        );
-
-}
-
-
-/* =========================================================
-   HIGH CONTRAST
-========================================================= */
-
-function toggleContrast() {
-
-    document.body
-        .classList.toggle(
-            "high-contrast"
-        );
-
-}
-
-
-/* =========================================================
-   READ ALOUD — VOICE LOADING & MATCHING
-========================================================= */
-
-let availableVoices = [];
-
-function loadVoices() {
-    if (!("speechSynthesis" in window)) return;
-    availableVoices = window.speechSynthesis.getVoices();
-}
-
-if ("speechSynthesis" in window) {
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-}
-
-function pickVoice(targetLang) {
-    if (!availableVoices.length) return null;
-
-    const target = targetLang.toLowerCase();
-    const prefix = target.split("-")[0];
-
-    // 1. Exact language match
-    let match = availableVoices.find(v =>
-        v.lang &&
-        v.lang.toLowerCase() === target
+async function searchCities(query) {
+  try {
+    const response = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json&countryCode=IN`
     );
 
-    if (match) return match;
+    const data = await response.json();
 
-    // 2. Same language, different region
-    match = availableVoices.find(v =>
-        v.lang &&
-        v.lang.toLowerCase().split("-")[0] === prefix
+    const results = (data.results || []).filter(location =>
+      location.country_code === "IN" &&
+      location.country === "India" &&
+      location.admin1
     );
 
-    if (match) return match;
+    $("suggestions").innerHTML = "";
 
-    // No suitable voice found.
-    // Let SpeechSynthesis use the browser's default
-    // voice for the requested language.
-    return null;
-}
-
-/* =========================================================
-   READ ALOUD — START / STOP TOGGLE
-========================================================= */
-
-function toggleReadAloud() {
-
-    /*
-       If speech is currently playing,
-       pressing the button again stops it.
-    */
-
-    if (isReading) {
-
-        stopReadAloud();
-
-        return;
-
+    if (!results.length) {
+      $("suggestions").innerHTML = `<div class="suggestion">${languageSettings[selectedLanguage].noCity}</div>`;
+      return;
     }
 
-
-    startReadAloud();
-
-}
-
-
-function startReadAloud() {
-
-    if (!("speechSynthesis" in window)) {
-
-        alert(
-            "Text-to-speech is not supported in this browser."
-        );
-
-        return;
-
-    }
-
-
-    loadVoices();
-    window.speechSynthesis.cancel();
-
-
-    const location =
-        document.getElementById(
-            "locTitle"
-        ).innerText;
-
-
-    const aqi =
-        document.getElementById(
-            "aqiValue"
-        ).innerText;
-
-
-    const status =
-        document.getElementById(
-            "aqiStatus"
-        ).innerText;
-
-
-    const mainPollutant =
-        document.getElementById(
-            "mainPollutant"
-        ).innerText;
-
-
-    const mainDescription =
-        document.getElementById(
-            "pollutantEffects"
-        ).innerText;
-
-
-    const mainAdvice =
-        document.getElementById(
-            "mainPollutantAdvice"
-        ).innerText;
-
-
-    /*
-       Also read the individual pollutant advice.
-       This makes Read Aloud useful for someone who
-       has difficulty visually reading the dashboard.
-    */
-
-    const pollutantText =
-        document.getElementById(
-            "pollutantsGrid"
-        ).innerText;
-
-
-    const text = `
-
-        ${location}.
-
-        ${t("aqiLabel")}: ${aqi}.
-
-        ${status}.
-
-        ${t("pollutants")}.
-
-        ${pollutantText}.
-
-        ${mainPollutant} ${t("mainSentence")}.
-
-        ${mainDescription}.
-
-        ${mainAdvice}.
-
-    `;
-
-
-    const utterance =
-        new SpeechSynthesisUtterance(
-            text
-        );
-
-
-    let langTag;
-
-    if (currentLanguage === "hi") {
-        langTag = "hi-IN";
-    } else if (currentLanguage === "mr") {
-        langTag = "mr-IN";
-    } else {
-        langTag = "en-IN";
-    }
-
-    utterance.lang = langTag;
-
-    loadVoices();
-
-    const matchedVoice = pickVoice(langTag);
-
-    if (matchedVoice) {
-        utterance.voice = matchedVoice;
-    }
-
-
-    utterance.rate =
-        0.9;
-
-    utterance.pitch =
-        1;
-
-
-    isReading = true;
-
-
-    document.getElementById(
-        "readButton"
-    ).innerText =
-        t("stopRead");
-
-
-    utterance.onend =
-        function() {
-
-            isReading =
-                false;
-
-            document.getElementById(
-                "readButton"
-            ).innerText =
-                t("read");
-
-        };
-
-
-    utterance.onerror =
-        function() {
-
-            isReading =
-                false;
-
-            document.getElementById(
-                "readButton"
-            ).innerText =
-                t("read");
-
-        };
-
-
-    window.speechSynthesis.speak(
-        utterance
-    );
-
-}
-
-
-/* =========================================================
-   STOP READ ALOUD
-========================================================= */
-
-function stopReadAloud() {
-
-    if ("speechSynthesis" in window) {
-
-        window.speechSynthesis.cancel();
-
-    }
-
-
-    isReading =
-        false;
-
-
-    document.getElementById(
-        "readButton"
-    ).innerText =
-        t("read");
-
-}
-
-
-/* =========================================================
-   CLOSE CITY SUGGESTIONS
-========================================================= */
-
-document.addEventListener(
-    "click",
-    function(event) {
-
-        if (
-            !event.target.closest(
-                ".search-box"
-            )
-        ) {
-
-            suggestions.innerHTML =
-                "";
-
-        }
-
-    }
-);
-
-function updateAQIMeter(aqiValue) {
-    const maxAQI = 300; 
-    let clampedAQI = Math.max(0, Math.min(aqiValue, maxAQI));
-    let percentage = (clampedAQI / maxAQI) * 100;
-    
-    const pointer = document.getElementById('aqi-pointer');
-    if (pointer) {
-        pointer.style.left = percentage + '%';
-    }
-}
-// Function to get the appropriate color class based on numerical AQI
-function getAQIColorClass(value) {
-    if (value <= 50) return 'aqi-color-good';
-    if (value <= 100) return 'aqi-color-moderate';
-    if (value <= 150) return 'aqi-color-unhealthy-sensitive';
-    if (value <= 200) return 'aqi-color-unhealthy';
-    return 'aqi-color-hazardous';
-}
-
-// Function to apply colors to elements dynamically
-function applyAQIFontColors(aqiValue, elementIdsOrClasses = []) {
-    const colorClass = getAQIColorClass(aqiValue);
-    const colorClasses = ['aqi-color-good', 'aqi-color-moderate', 'aqi-color-unhealthy-sensitive', 'aqi-color-unhealthy', 'aqi-color-hazardous'];
-
-    elementIdsOrClasses.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
-            // Remove previous color classes
-            el.classList.remove(...colorClasses);
-            // Add new health-based color class
-            el.classList.add(colorClass);
-        });
+    results.forEach(location => {
+      const item = document.createElement("div");
+      item.className = "suggestion";
+      item.innerHTML = `<strong>${location.name}</strong><br><small>${location.admin1}, India</small>`;
+
+      item.onclick = () => {
+        selectedCity = location.name;
+        selectedPlace = location;
+        $("cityInput").value = location.name;
+        $("suggestions").innerHTML = "";
+        fetchAQIData();
+      };
+
+      $("suggestions").appendChild(item);
     });
+  } catch {
+    $("suggestions").innerHTML = "";
+  }
 }
-/* =========================================================
-   INITIALISE
-========================================================= */
 
-updateInterfaceText();
+async function fetchAQIData() {
+  selectedCity = $("cityInput").value.trim() || selectedCity;
 
-fetchAQIData();
+  if (!selectedCity) {
+    $("cityInput").focus();
+    return;
+  }
 
+  $("results").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+  try {
+    const response = await fetch(
+      `/api/air-quality?city=${encodeURIComponent(selectedCity)}`
+    );
+
+    if (!response.ok) throw new Error("API error");
+
+    currentData = await response.json();
+    renderAirData(currentData);
+  } catch (error) {
+    console.error("AIR QUALITY ERROR:", error);
+    showToast(t("fetchError"));
+  }
+}
+
+function showToast(message) {
+  $("toast").textContent = message;
+  $("toast").classList.add("show");
+
+  setTimeout(() => $("toast").classList.remove("show"), 4000);
+}
+
+$("cityInput").addEventListener("input", () => {
+  clearTimeout(searchTimer);
+
+  const query = $("cityInput").value.trim();
+
+  if (query.length < 2) {
+    $("suggestions").innerHTML = "";
+    return;
+  }
+
+  searchTimer = setTimeout(() => searchCities(query), 350);
+});
+
+$("cityInput").addEventListener("keydown", event => {
+  if (event.key === "Enter") fetchAQIData();
+});
+
+$("check").onclick = fetchAQIData;
+
+$("language").addEventListener("change", event => applyLanguage(event.target.value));
+
+$("back").onclick = () => {
+  $("home").scrollIntoView({ behavior: "smooth" });
+};
+
+$("textButton").onclick = () => {
+  textLevel = (textLevel + 1) % 4;
+
+  document.body.classList.remove("text-0", "text-1", "text-2", "text-3");
+  document.body.classList.add(`text-${textLevel}`);
+
+  $("textButton").textContent = ["A", "A+", "A++", "A+++"][textLevel];
+};
+
+$("themeButton").onclick = () => $("themes").classList.toggle("show");
+
+document.querySelectorAll("[data-theme]").forEach(button => {
+  button.onclick = () => {
+    document.body.classList.remove("theme-aquatic", "theme-forest", "theme-contrast");
+
+    if (button.dataset.theme) {
+      document.body.classList.add(button.dataset.theme);
+    }
+
+    $("themes").classList.remove("show");
+  };
+});
+
+$("notifyButton").onclick = () => {
+  showToast(
+    currentData
+      ? `${$("aqiStatus").textContent}: ${$("mainAdvice").textContent}`
+      : "Search for a city first."
+  );
+};
+
+$("readButton").onclick = () => {
+  if (!("speechSynthesis" in window)) {
+    showToast(languageSettings[selectedLanguage].readUnsupported);
+    return;
+  }
+
+  if (isReading) {
+    speechSynthesis.cancel();
+    isReading = false;
+    $("readButton").textContent = "🔊";
+    return;
+  }
+
+  const location = $("location").textContent;
+  const aqi = $("aqi").textContent;
+  const status = $("aqiStatus").textContent;
+  const pollutant = $("mainPollutant").textContent;
+
+  const copy = languageSettings[selectedLanguage];
+  let speechText = selectedLanguage === "hi"
+    ? `${location}। वायु गुणवत्ता सूचकांक ${aqi} है। वर्तमान स्थिति: ${status}। मुख्य प्रदूषक: ${pollutant}। ${$("mainAdvice").textContent}`
+    : `${location}. Air quality index ${aqi}. Current status: ${status}. Main pollutant: ${pollutant}. ${$("mainAdvice").textContent}`;
+  speechText = `${fullCopy[selectedLanguage].narration} ${speechText} ${fullCopy[selectedLanguage].best} ${$("best").textContent}. ${fullCopy[selectedLanguage].helpText}`;
+  const speech = new SpeechSynthesisUtterance(speechText);
+
+  speech.lang = copy.speech;
+  const voice = preferredVoice(copy.speech);
+  if (voice) speech.voice = voice;
+  speech.rate = .85;
+
+  speech.onend = () => {
+    isReading = false;
+    $("readButton").textContent = "🔊";
+  };
+
+  isReading = true;
+  $("readButton").textContent = "■";
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(speech);
+};
+
+applyLanguage($("language").value);
 </script>
 
 </body>
