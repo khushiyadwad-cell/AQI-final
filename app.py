@@ -413,9 +413,8 @@ def air_quality():
             latitude,
             longitude,
         )
-    except (requests.RequestException, KeyError, TypeError, ValueError):
-        # Wind is supplementary. Do not break the whole AQI report if
-        # the weather endpoint is temporarily unavailable.
+    except Exception as e:
+        print("WIND API ERROR:", repr(e))
         current_wind_speed = None
         current_wind_direction = None
 
