@@ -12,6 +12,9 @@ app = Flask(__name__)
 WIND_CACHE = {}
 WIND_CACHE_TTL = timedelta(minutes=10)
 
+AQI_CACHE = {}
+AQI_CACHE_TTL = timedelta(minutes=10)
+
 OPEN_METEO_GEOCODING = "https://geocoding-api.open-meteo.com/v1/search"
 OPEN_METEO_AIR_QUALITY = "https://air-quality-api.open-meteo.com/v1/air-quality"
 OPEN_METEO_WEATHER = "https://api.open-meteo.com/v1/forecast"
@@ -221,7 +224,21 @@ def get_geocoded_city(city_name):
 def get_air_quality(latitude, longitude):
     """
     Get today's hourly air-quality data.
+    Cache each location for 10 minutes to avoid rate limits.
     """
+
+    cache_key = (round(latitude, 3), round(longitude, 3))
+    now = datetime.now(timezone.utc)
+
+    # Return cached AQI data if it is still fresh
+    cached = AQI_CACHE.get(cache_key)
+
+    if cached:
+        cached_time, cached_data = cached
+
+        if now - cached_time < AQI_CACHE_TTL:
+            return cached_data
+
     params = {
         "latitude": latitude,
         "longitude": longitude,
@@ -243,6 +260,24 @@ def get_air_quality(latitude, longitude):
         "timezone": "auto",
         "forecast_days": 1,
     }
+
+    response = requests.get(
+        OPEN_METEO_AIR_QUALITY,
+        params=params,
+        timeout=10,
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    # Save successful result in cache
+    AQI_CACHE[cache_key] = (
+        now,
+        data,
+    )
+
+    return data
 
     response = requests.get(
         OPEN_METEO_AIR_QUALITY,
@@ -327,6 +362,38 @@ def get_current_wind(latitude, longitude):
         "aqi_so2": value("us_aqi_sulphur_dioxide"),
     }
 
+def extract_current_values(air_quality_data):
+    hourly = air_quality_data.get("hourly") or {}
+    times = hourly.get("time") or []
+
+    current_index = find_current_index(
+        times,
+        air_quality_data.get("utc_offset_seconds", 0),
+    )
+
+    def value(name):
+        values = hourly.get(name) or []
+        if current_index >= len(values):
+            return None
+        return values[current_index]
+
+    return {
+        "times": times,
+        "index": current_index,
+        "aqi": value("us_aqi"),
+        "pm2_5": value("pm2_5"),
+        "pm10": value("pm10"),
+        "carbon_monoxide": value("carbon_monoxide"),
+        "nitrogen_dioxide": value("nitrogen_dioxide"),
+        "sulphur_dioxide": value("sulphur_dioxide"),
+        "ozone": value("ozone"),
+        "aqi_pm25": value("us_aqi_pm2_5"),
+        "aqi_pm10": value("us_aqi_pm10"),
+        "aqi_no2": value("us_aqi_nitrogen_dioxide"),
+        "aqi_co": value("us_aqi_carbon_monoxide"),
+        "aqi_ozone": value("us_aqi_ozone"),
+        "aqi_so2": value("us_aqi_sulphur_dioxide"),
+    }
 
 def build_location_summary(city_name):
     """
