@@ -9,6 +9,8 @@ sentry_sdk.init(
 )
 
 app = Flask(__name__)
+WIND_CACHE = {}
+WIND_CACHE_TTL = timedelta(minutes=10)
 
 OPEN_METEO_GEOCODING = "https://geocoding-api.open-meteo.com/v1/search"
 OPEN_METEO_AIR_QUALITY = "https://air-quality-api.open-meteo.com/v1/air-quality"
@@ -254,8 +256,22 @@ def get_air_quality(latitude, longitude):
 
 def get_current_wind(latitude, longitude):
     """
-    Current wind data required by the new frontend.
+    Get current wind data from Open-Meteo.
+    Cache each location for 10 minutes to avoid rate limits.
     """
+
+    cache_key = (round(latitude, 3), round(longitude, 3))
+    now = datetime.now(timezone.utc)
+
+    # Return cached wind data if it is still fresh
+    cached = WIND_CACHE.get(cache_key)
+
+    if cached:
+        cached_time, cached_speed, cached_direction = cached
+
+        if now - cached_time < WIND_CACHE_TTL:
+            return cached_speed, cached_direction
+
     params = {
         "latitude": latitude,
         "longitude": longitude,
@@ -269,25 +285,23 @@ def get_current_wind(latitude, longitude):
         params=params,
         timeout=10,
     )
+
     response.raise_for_status()
 
     data = response.json()
     current = data.get("current") or {}
 
-    return (
-        current.get("wind_speed_10m"),
-        current.get("wind_direction_10m"),
+    wind_speed = current.get("wind_speed_10m")
+    wind_direction = current.get("wind_direction_10m")
+
+    # Save successful result in cache
+    WIND_CACHE[cache_key] = (
+        now,
+        wind_speed,
+        wind_direction,
     )
 
-
-def extract_current_values(air_quality_data):
-    hourly = air_quality_data.get("hourly") or {}
-    times = hourly.get("time") or []
-
-    current_index = find_current_index(
-        times,
-        air_quality_data.get("utc_offset_seconds", 0),
-    )
+    return wind_speed, wind_direction
 
     def value(name):
         values = hourly.get(name) or []
