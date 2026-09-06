@@ -473,7 +473,30 @@ body.theme-contrast #home,body.theme-contrast .results{background:#061a3a!import
 
 <div class="toast" id="toast"></div>
 
+<script
+  src="https://browser.sentry-cdn.com/10.15.0/bundle.min.js"
+  crossorigin="anonymous">
+</script>
+
 <script>
+
+Sentry.init({
+  dsn: "https://239de76bba130e1faac9b4038938011c@o4512038924320768.ingest.de.sentry.io/4512038969671760",
+  sendDefaultPii: false,
+  enableLogs: true
+});
+
+const sessionId = crypto.randomUUID();
+
+function trackEvent(eventName, data = {}) {
+  if (!window.Sentry?.logger?.info) return;
+
+  Sentry.logger.info(eventName, {
+    session_id: sessionId,
+    ...data
+  });
+}
+
 const $ = id => document.getElementById(id);
 
 let selectedCity = "Mumbai";
@@ -803,6 +826,11 @@ function renderAirData(data) {
 
   $("best").textContent = data.best_time || t("early");
 
+  trackEvent("best_time_viewed", {
+  city: city,
+  best_time: $("best").textContent
+  });
+
   const windSpeed = getValue(data, ["wind_speed", "windspeed", "windSpeed", "wind_speed_10m"]);
   const windDirection = getValue(data, ["wind_direction", "winddirection", "windDirection", "wind_direction_10m"]);
   const directionNames = t("directions");
@@ -892,6 +920,10 @@ async function searchCities(query) {
 async function fetchAQIData() {
   selectedCity = $("cityInput").value.trim() || selectedCity;
 
+  trackEvent("city_search", {
+  city: selectedCity
+  });
+
   if (!selectedCity) {
     $("cityInput").focus();
     return;
@@ -911,6 +943,11 @@ async function fetchAQIData() {
 
     currentData = await response.json();
     renderAirData(currentData);
+
+    trackEvent("aqi_viewed", {
+      city: selectedCity,
+      aqi: getValue(currentData, ["aqi", "AQI", "us_aqi", "air_quality_index", "air_quality"])
+    });
   } catch (error) {
     console.error("AIR QUALITY ERROR:", error);
     showToast(t("fetchError"));
@@ -943,11 +980,23 @@ $("cityInput").addEventListener("keydown", event => {
 
 $("check").onclick = fetchAQIData;
 
-$("language").addEventListener("change", event => applyLanguage(event.target.value));
+$("language").addEventListener("change", event => {
+  applyLanguage(event.target.value);
+
+  trackEvent("language_changed", {
+    language: event.target.value
+  });
+});
 
 $("back").onclick = () => {
   $("home").scrollIntoView({ behavior: "smooth" });
 };
+
+$("mapLink").addEventListener("click", () => {
+  trackEvent("map_interacted", {
+    city: $("location").textContent
+  });
+});
 
 $("textButton").onclick = () => {
   textLevel = (textLevel + 1) % 4;
@@ -1019,6 +1068,12 @@ $("readButton").onclick = () => {
   $("readButton").textContent = "■";
 
   speechSynthesis.cancel();
+
+  trackEvent("read_aloud_used", {
+    city: $("location").textContent,
+    language: selectedLanguage
+  });
+
   speechSynthesis.speak(speech);
 };
 
