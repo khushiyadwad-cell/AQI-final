@@ -803,7 +803,7 @@ function renderMainPollutant(data) {
         : (advice[winner] || "Use the pollutant reading above to guide your outdoor plans.");
 }
 
-function renderAirData(data) {
+async function renderAirData(data) {
   const aqi = getValue(data, ["aqi", "AQI", "us_aqi", "air_quality_index", "air_quality"]);
   const city = data.city || data.location || data.name || selectedCity;
   const state = data.state || data.admin1 || selectedPlace?.admin1 || "";
@@ -831,11 +831,29 @@ function renderAirData(data) {
   best_time: $("best").textContent
   });
 
-  const windSpeed = getValue(data, ["wind_speed", "windspeed", "windSpeed", "wind_speed_10m"]);
-  const windDirection = getValue(data, ["wind_direction", "winddirection", "windDirection", "wind_direction_10m"]);
   const directionNames = t("directions");
 
-  $("windSpeed").textContent = windSpeed == null ? "—" : `${Number(windSpeed).toFixed(1)} km/h`;
+  let windSpeed = null;
+  let windDirection = null;
+
+  try {
+    const windResponse = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${data.latitude ?? selectedPlace?.latitude}&longitude=${data.longitude ?? selectedPlace?.longitude}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&timezone=auto`
+    );
+
+    if (windResponse.ok) {
+      const windData = await windResponse.json();
+
+      windSpeed = windData.current?.wind_speed_10m ?? null;
+      windDirection = windData.current?.wind_direction_10m ?? null;
+    }
+  } catch (error) {
+    console.error("Wind API error:", error);
+  }
+
+  $("windSpeed").textContent =
+    windSpeed == null ? "—" : `${Number(windSpeed).toFixed(1)} km/h`;
+
   $("windDirection").textContent =
     windDirection == null
       ? fullCopy[selectedLanguage].windNone
