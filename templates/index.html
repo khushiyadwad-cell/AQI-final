@@ -195,7 +195,7 @@ const languageSettings = {
     back: "← Search another city",
     noCity: "No verified Indian city found.",
     readUnsupported: "Read aloud is not supported by this browser.",
-    searchFirst: "Search for a city first."
+    searchFirst: selectedLanguage === "hi" ? "पहले कोई शहर खोजें।" : "Search for a city first."
   },
   hi: {
     locale: "hi-IN",
@@ -282,13 +282,13 @@ function applyLanguage(language) {
 }
 
 const pollutantInfo = {
-  pm25:{name:"PM2.5",keys:["pm2_5","pm25","PM2.5"],healthy:15,moderate:35,effect:"Tiny particles can travel deep into the lungs.",advice:["Low today — normal outdoor plans are comfortable.","Sensitive lungs may notice this. Keep difficult outdoor exercise shorter.","Limit outdoor activity and consider a well-fitting mask."]},
-  pm10:{name:"PM10",keys:["pm10","PM10"],healthy:45,moderate:100,effect:"Dust can irritate eyes, throat, and upper airways.",advice:["Dust levels are low.","Avoid dusty roads if you are sensitive.","Avoid dusty routes and vigorous activity."]},
-  ozone:{name:"O₃ / Ozone",keys:["ozone","o3","O3"],healthy:100,moderate:160,effect:"Ozone can inflame airways in hot sunny weather.",advice:["Ozone is low.","Exercise in morning or evening.","Stay indoors during the afternoon."]},
-  no2:{name:"NO₂",keys:["nitrogen_dioxide","no2","NO2"],healthy:40,moderate:100,effect:"Traffic-related NO₂ can worsen cough and asthma.",advice:["Traffic gas exposure is low.","Choose quieter roads.","Avoid busy-road exercise."]},
-  so2:{name:"SO₂",keys:["sulfur_dioxide","sulphur_dioxide","so2","SO2"],healthy:40,moderate:100,effect:"SO₂ can tighten airways and irritate the throat.",advice:["SO₂ is low.","People with asthma should reduce exertion.","Stay indoors where possible."]},
-  co:{name:"CO",keys:["carbon_monoxide","co","CO"],healthy:4000,moderate:10000,effect:"CO lowers the blood’s ability to carry oxygen.",advice:["CO is low.","Avoid enclosed vehicle-heavy areas.","Move to fresh air if dizzy or nauseated."]},
-  smog:{name:"Smog warning",keys:["smog","smog_warning","haze"],healthy:0,moderate:1,effect:"Smog is pollution mixed with haze.",advice:["No significant smog warning.","Haze is present; reduce long outdoor activity.","Stay indoors where possible."]}
+  pm25:{name:"PM2.5",nameHi:"PM2.5",keys:["pm2_5","pm25","PM2.5"],healthy:15,moderate:35,effect:"Tiny particles can travel deep into the lungs.",advice:["Low today — normal outdoor plans are comfortable.","Sensitive lungs may notice this. Keep difficult outdoor exercise shorter.","Limit outdoor activity and consider a well-fitting mask."]},
+  pm10:{name:"PM10",nameHi:"PM10",keys:["pm10","PM10"],healthy:45,moderate:100,effect:"Dust can irritate eyes, throat, and upper airways.",advice:["Dust levels are low.","Avoid dusty roads if you are sensitive.","Avoid dusty routes and vigorous activity."]},
+  ozone:{name:"O₃ / Ozone",nameHi:"O₃ / ओज़ोन",keys:["ozone","o3","O3"],healthy:100,moderate:160,effect:"Ozone can inflame airways in hot sunny weather.",advice:["Ozone is low.","Exercise in morning or evening.","Stay indoors during the afternoon."]},
+  no2:{name:"NO₂",nameHi:"NO₂",keys:["nitrogen_dioxide","no2","NO2"],healthy:40,moderate:100,effect:"Traffic-related NO₂ can worsen cough and asthma.",advice:["Traffic gas exposure is low.","Choose quieter roads.","Avoid busy-road exercise."]},
+  so2:{name:"SO₂",nameHi:"SO₂",keys:["sulfur_dioxide","sulphur_dioxide","so2","SO2"],healthy:40,moderate:100,effect:"SO₂ can tighten airways and irritate the throat.",advice:["SO₂ is low.","People with asthma should reduce exertion.","Stay indoors where possible."]},
+  co:{name:"CO",nameHi:"CO",keys:["carbon_monoxide","co","CO"],healthy:4000,moderate:10000,effect:"CO lowers the blood’s ability to carry oxygen.",advice:["CO is low.","Avoid enclosed vehicle-heavy areas.","Move to fresh air if dizzy or nauseated."]},
+  smog:{name:"Smog warning",nameHi:"धुंध की चेतावनी",keys:["smog","smog_warning","haze"],healthy:0,moderate:1,effect:"Smog is pollution mixed with haze.",advice:["No significant smog warning.","Haze is present; reduce long outdoor activity.","Stay indoors where possible."]}
 };
 
 function getValue(data, keys) {
@@ -389,11 +389,23 @@ function renderPollutants(values) {
 
     $("pollutants").innerHTML += `
       <article class="pollutant">
-        <div class="pollutant-name">${displayInfo.name}</div>
+        <div class="pollutant-name">${selectedLanguage === "hi" && displayInfo.nameHi ? displayInfo.nameHi : displayInfo.name}</div>
         <div class="pollutant-value pollutant-number-${severity}">${display}</div>
         <div class="unit">${unit}</div>
         <span class="tag ${status[1]}">${status[0]}</span>
-        <p class="advice">${missing ? t("noData") : displayInfo.advice[status[2]]}</p>
+        <p class="advice">${missing ? t("noData") : (
+        selectedLanguage === "hi"
+          ? ({
+              pm25:["आज स्तर कम है — सामान्य बाहरी गतिविधियाँ आराम से की जा सकती हैं।","संवेदनशील फेफड़ों पर इसका असर हो सकता है। कठिन बाहरी व्यायाम का समय कम रखें।","बाहरी गतिविधि कम करें और अच्छी तरह फिट होने वाले मास्क पर विचार करें।"],
+              pm10:["धूल का स्तर कम है।","यदि आप संवेदनशील हैं तो धूल भरी सड़कों से बचें।","धूल भरे रास्तों और तेज़ गतिविधियों से बचें।"],
+              ozone:["ओज़ोन का स्तर कम है।","सुबह या शाम को व्यायाम करें।","दोपहर के समय घर के अंदर रहें।"],
+              no2:["यातायात से होने वाला गैस का संपर्क कम है।","कम यातायात वाली सड़कें चुनें।","व्यस्त सड़कों के पास व्यायाम करने से बचें।"],
+              so2:["SO₂ का स्तर कम है।","अस्थमा वाले लोगों को शारीरिक परिश्रम कम करना चाहिए।","जहाँ संभव हो, घर के अंदर रहें।"],
+              co:["CO का स्तर कम है।","बंद और अधिक वाहन वाले स्थानों से बचें।","चक्कर या मितली महसूस होने पर ताज़ी हवा में जाएँ।"],
+              smog:["स्मॉग की कोई महत्वपूर्ण चेतावनी नहीं है।","धुंध मौजूद है; लंबे समय तक बाहर रहने वाली गतिविधि कम करें।","जहाँ संभव हो, घर के अंदर रहें।"]
+            }[type] || displayInfo.advice)[status[2]]
+          : displayInfo.advice[status[2]]
+      )}</p>
       </article>
     `;
   });
@@ -417,7 +429,7 @@ function renderMainPollutant(data) {
 
     $("contribution").textContent =
         contribution != null
-            ? Math.round(contribution) + "% of reported pollutant load"
+            ? (selectedLanguage === "hi" ? Math.round(contribution) + "% रिपोर्ट किए गए प्रदूषक भार का" : Math.round(contribution) + "% of reported pollutant load")
             : "—";
 
     const descriptions = {
@@ -429,6 +441,15 @@ function renderMainPollutant(data) {
         "SO₂": "Sulfur dioxide can irritate the respiratory system.",
         "CO": "Carbon monoxide reduces the amount of oxygen that can be carried in the blood."
     };
+    const descriptionsHi = {
+        "PM2.5": "बहुत छोटे कण फेफड़ों के अंदर तक पहुँच सकते हैं और साँस लेने को प्रभावित कर सकते हैं।",
+        "PM10": "बड़े कण नाक, गले और फेफड़ों में जलन पैदा कर सकते हैं।",
+        "O₃": "ओज़ोन श्वसन मार्ग में जलन पैदा कर सकता है और साँस लेना मुश्किल कर सकता है।",
+        "Ozone": "ओज़ोन श्वसन मार्ग में जलन पैदा कर सकता है और साँस लेना मुश्किल कर सकता है।",
+        "NO₂": "नाइट्रोजन डाइऑक्साइड श्वसन मार्ग में जलन पैदा कर सकता है, खासकर बाहर गतिविधि के दौरान।",
+        "SO₂": "सल्फर डाइऑक्साइड श्वसन तंत्र में जलन पैदा कर सकता है।",
+        "CO": "कार्बन मोनोऑक्साइड रक्त द्वारा ले जाई जाने वाली ऑक्सीजन की मात्रा को कम करता है।"
+    };
 
     const advice = {
         "PM2.5": "Consider reducing prolonged outdoor activity when levels are elevated.",
@@ -439,12 +460,23 @@ function renderMainPollutant(data) {
         "SO₂": "Reduce prolonged outdoor exposure when levels are elevated.",
         "CO": "Avoid poorly ventilated areas when carbon monoxide levels are elevated."
     };
+    const adviceHi = {
+        "PM2.5": "स्तर बढ़े होने पर लंबे समय तक बाहर रहने वाली गतिविधि कम करने पर विचार करें।",
+        "PM10": "स्तर बढ़े होने पर लंबे समय तक बाहर की गतिविधि कम करें।",
+        "O₃": "ओज़ोन का स्तर अधिक होने पर लंबे समय तक बाहर शारीरिक परिश्रम से बचें।",
+        "Ozone": "ओज़ोन का स्तर अधिक होने पर लंबे समय तक बाहर शारीरिक परिश्रम से बचें।",
+        "NO₂": "स्तर बढ़े होने पर व्यस्त सड़कों के पास लंबे समय तक रहने से बचें।",
+        "SO₂": "स्तर बढ़े होने पर लंबे समय तक बाहर रहने से बचें।",
+        "CO": "कार्बन मोनोऑक्साइड का स्तर बढ़ा होने पर कम हवादार स्थानों से बचें।"
+    };
 
-    $("effect").textContent =
-        descriptions[winner] || "This pollutant is currently the main reported concern.";
+    $("effect").textContent = selectedLanguage === "hi"
+        ? (descriptionsHi[winner] || "यह प्रदूषक इस समय मुख्य चिंता है।")
+        : (descriptions[winner] || "This pollutant is currently the main reported concern.");
 
-    $("mainAdvice").textContent =
-        advice[winner] || "Use the pollutant reading above to guide your outdoor plans.";
+    $("mainAdvice").textContent = selectedLanguage === "hi"
+        ? (adviceHi[winner] || "ऊपर दी गई प्रदूषक रीडिंग के आधार पर अपनी बाहरी गतिविधियों की योजना बनाएं।")
+        : (advice[winner] || "Use the pollutant reading above to guide your outdoor plans.");
 }
 
 function renderAirData(data) {
@@ -643,7 +675,7 @@ $("notifyButton").onclick = () => {
   showToast(
     currentData
       ? `${$("aqiStatus").textContent}: ${$("mainAdvice").textContent}`
-      : "Search for a city first."
+      : selectedLanguage === "hi" ? "पहले कोई शहर खोजें।" : "Search for a city first."
   );
 };
 
