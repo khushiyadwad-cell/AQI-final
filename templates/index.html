@@ -37,7 +37,308 @@ body.theme-aquatic #home{background:linear-gradient(145deg,#e4ffff,#9fecef,#35ae
 #home>*{position:relative;z-index:1}#home::before,#home::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:0}body.theme-forest #home::before{opacity:1;background:repeating-linear-gradient(82deg,transparent 0 65px,#356b2c 66px 73px,#8dbb61 74px 80px,transparent 81px 142px);background-size:230px 100%;mask-image:linear-gradient(90deg,transparent 0 48%,#000 76%)}body.theme-forest #home::after{opacity:.8;background:radial-gradient(ellipse at 80% 24%,#d9ef83 0 7px,transparent 8px),radial-gradient(ellipse at 90% 56%,#c6e46b 0 6px,transparent 7px);background-size:55px 72px;mask-image:linear-gradient(90deg,transparent 0 48%,#000 76%)}body.theme-aquatic #home::before{opacity:1;background:repeating-radial-gradient(ellipse at 20% 115%,transparent 0 22px,#b8f8ff 23px 27px,transparent 28px 52px);background-size:230px 115px;mask-image:linear-gradient(90deg,transparent 0 35%,#000 65%)}body.theme-aquatic #home::after{opacity:.55;background:linear-gradient(155deg,transparent 0 43%,#0577c955 44% 48%,transparent 49% 100%)}
 /* Hindi typography, centred identity, severity figures, and readable midnight high contrast. */
 :lang(hi),:lang(hi) button,:lang(hi) input,:lang(hi) select{font-family:"Noto Sans Devanagari","Nirmala UI",sans-serif}:lang(hi) h1,:lang(hi) h2{font-family:"Noto Sans Devanagari","Nirmala UI",sans-serif;letter-spacing:-.035em;line-height:1.08}:lang(hi) .hero p,:lang(hi) .advice,:lang(hi) .hint,:lang(hi) .sub{line-height:1.75}:lang(hi) .eyebrow{letter-spacing:.04em}.brand{left:50%;transform:translateX(-50%);top:24px;font-size:clamp(2rem,4vw,3.35rem);letter-spacing:-.055em;white-space:nowrap}.brand b{vertical-align:middle}.hero{padding-top:160px!important}.aqi-number-good,.pollutant-number-good{color:#007a68!important}.aqi-number-moderate,.pollutant-number-moderate{color:#936000!important}.aqi-number-unhealthy,.pollutant-number-unhealthy{color:#b54708!important}.aqi-number-very-unhealthy,.pollutant-number-very-unhealthy{color:#b42318!important}.aqi-number-hazardous,.pollutant-number-hazardous{color:#7a1538!important}
-body.theme-contrast #home,body.theme-contrast .results{background:#061a3a!important;color:#fff!important}body.theme-contrast #home::before,body.theme-contrast #home::after{opacity:0!important}body.theme-contrast #home .brand,body.theme-contrast #home .hero,body.theme-contrast #home .hero p,body.theme-contrast .results-head,body.theme-contrast .results-head .sub,body.theme-contrast .section-title,body.theme-contrast .section-title .sub{color:#fff!important}body.theme-contrast .brand b,body.theme-contrast .primary,body.theme-contrast .clinic a,body.theme-contrast .back{background:#ffd400!important;color:#061a3a!important;border:3px solid #fff!important}body.theme-contrast .controls button,body.theme-contrast .controls select,body.theme-contrast .theme-menu,body.theme-contrast .theme-menu button,body.theme-contrast .card,body.theme-contrast .pollutant,body.theme-contrast .wind-card,body.theme-contrast .main-detail,body.theme-contrast .hourly,body.theme-contrast .clinic,body.theme-contrast .search-card,body.theme-contrast .city-card,body.theme-contrast .map-label{background:#fff!important;color:#061a3a!important;border:3px solid #ffd400!important;box-shadow:none!important}body.theme-contrast .city-card,.theme-contrast .city-card strong,.theme-contrast .city-card p{color:#000!important}body.theme-contrast .main-detail{border-left-width:10px!important}body.theme-contrast .sub,body.theme-contrast .advice,body.theme-contrast .wind-card p,body.theme-contrast .hint{color:#061a3a!important}body.theme-contrast .good{background:#c7f2e8!important;color:#003d35!important;border:2px solid #003d35!important}body.theme-contrast .moderate{background:#ffd400!important;color:#382800!important;border:2px solid #382800!important}body.theme-contrast .bad{background:#d92d20!important;color:#fff!important;border:2px solid #69120b!important}body.theme-contrast :focus-visible{outline:4px solid #ffd400!important;outline-offset:3px}@media(max-width:560px){.brand{top:76px;font-size:2rem}.hero{padding-top:150px!important}}
+body.theme-contrast #home,body.theme-contrast .results{background:#061a3a!important;color:#fff!important}body.theme-contrast #home::before,body.theme-contrast #home::after{opacity:0!important}body.theme-contrast #home .brand,body.theme-contrast #home .hero,body.theme-contrast #home .hero p,body.theme-contrast .results-head,body.theme-contrast .results-head .sub,body.theme-contrast .section-title,body.theme-contrast .section-title .sub{color:#fff!important}body.theme-contrast .brand b,body.theme-contrast .primary,body.theme-contrast .clinic a,body.theme-contrast .back{background:#ffd400!important;color:#061a3a!important;border:3px solid #fff!important}body.theme-contrast .controls button,body.theme-contrast .controls select,body.theme-contrast .theme-menu,body.theme-contrast .theme-menu button,body.theme-contrast .card,body.theme-contrast .pollutant,body.theme-contrast .wind-card,body.theme-contrast .main-detail,body.theme-contrast .hourly,body.theme-contrast .clinic,body.theme-contrast .search-card,body.theme-contrast .city-card,body.theme-contrast .map-label{background:#fff!important;color:#061a3a!important;border:3px solid #ffd400!important;box-shadow:none!important}body.theme-contrast .city-card,.theme-contrast .city-card strong,.theme-contrast .city-card p{color:#000!important}body.theme-contrast .main-detail{border-left-width:10px!important}body.theme-contrast .sub,body.theme-contrast .advice,body.theme-contrast .wind-card p,body.theme-contrast .hint{color:#061a3a!important}body.theme-contrast .good{background:#c7f2e8!important;color:#003d35!important;border:2px solid #003d35!important}body.theme-contrast .moderate{background:#ffd400!important;color:#382800!important;border:2px solid #382800!important}body.theme-contrast .bad{background:#d92d20!important;color:#fff!important;border:2px solid #69120b!important}body.theme-contrast :focus-visible{outline:4px solid #ffd400!important;outline-offset:3px}@media(max-width:560px){ .brand{top:76px;font-size:2rem}.hero{padding-top:150px!important}}
+/* =========================
+   MOBILE LAYOUT FIX
+   ========================= */
+
+@media (max-width: 560px) {
+
+  /* Prevent anything from creating horizontal scrolling */
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Make the home page flow naturally on mobile */
+  #home {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+    overflow: hidden;
+  }
+
+  /* Logo */
+  #home .brand {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+
+    width: 100%;
+    text-align: center;
+
+    margin: 0 0 18px;
+    padding: 0;
+
+    font-size: 2rem;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  #home .brand b {
+    display: inline-block;
+    margin-right: 7px;
+    padding: 6px 8px;
+  }
+
+  /* Controls go UNDER the logo instead of being absolutely positioned */
+  #home .controls {
+    position: relative;
+    top: auto;
+    right: auto;
+
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+
+    gap: 8px;
+    margin: 0 auto 30px;
+  }
+
+  #home .controls button,
+  #home .controls select {
+    min-height: 48px;
+    padding: 8px 12px;
+  }
+
+  #home .controls select {
+    width: auto;
+    max-width: 125px;
+  }
+
+  #home .controls button {
+    min-width: 52px;
+  }
+
+  /* Hero */
+  #home .hero {
+    position: relative;
+
+    width: 100%;
+    max-width: 100%;
+
+    padding: 0 !important;
+    margin: 0;
+
+    display: block;
+  }
+
+  #home .hero .eyebrow {
+    margin-top: 10px;
+  }
+
+  #home .hero h1 {
+    font-size: clamp(3rem, 14vw, 4.5rem);
+    line-height: .94;
+    margin: 18px 0;
+  }
+
+  #home .hero > p {
+    max-width: 100%;
+    margin-bottom: 22px;
+  }
+
+  /* Search card */
+  #home .search-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 18px;
+    margin: 0;
+  }
+
+  #home .search-row {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #home .search-row input,
+  #home .search-row .primary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #home .primary {
+    padding: 14px;
+  }
+
+  /* Suggestions stay inside the screen */
+  #home .suggestions {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Featured cities */
+  #home .hero > div:last-child {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 28px;
+  }
+
+  #home .city-grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  /* Hide decorative sun on mobile */
+  #home .visual {
+    display: none;
+  }
+
+  /* Theme menu */
+  #home .theme-menu {
+    position: absolute;
+    top: 115px;
+    right: 16px;
+    width: min(210px, calc(100vw - 32px));
+  }
+
+  /* Results page */
+  #results {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 16px 40px;
+    overflow-x: hidden;
+  }
+
+  #results .results-head {
+    display: block;
+  }
+
+  #results .results-head h2 {
+    font-size: clamp(2.5rem, 12vw, 4rem);
+    overflow-wrap: anywhere;
+  }
+
+  #results .back {
+    margin-top: 14px;
+    width: 100%;
+  }
+
+  #results .overview {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  #results .card {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  #results .aqi-row {
+    flex-wrap: wrap;
+  }
+
+  #results .aqi {
+    font-size: clamp(4.5rem, 22vw, 7rem);
+  }
+
+  /* Map */
+  #results .map-card {
+    min-height: 280px;
+  }
+
+  #results .map-card iframe {
+    min-height: 280px;
+  }
+
+  /* Wind */
+  #results .wind-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 18px;
+    flex-wrap: wrap;
+  }
+
+  /* Pollutants */
+  #results .pollutants {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  #results .pollutant {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Main pollutant */
+  #results .main-detail {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #results .main-detail > div {
+    padding: 20px;
+  }
+
+  /* Hourly AQI */
+  #results .hourly {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Clinic */
+  #results .clinic {
+    width: 100%;
+    display: block;
+  }
+
+  #results .clinic a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  /* Long text should never push the page wider */
+  #home *,
+  #results * {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+}
+
+@media (max-width: 560px) {
+    #home .brand {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        width: 100%;
+        text-align: center;
+        margin: 0 0 22px !important;
+    }
+
+    #home .controls {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        width: 100%;
+        margin: 0 auto 35px !important;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    #home .hero {
+        padding-top: 0 !important;
+    }
+}
+
 </style>
 </head>
 
@@ -368,8 +669,8 @@ function renderFeaturedLocations(data) {
     const aqiLabel = Number.isFinite(aqi) ? ` · AQI ${Math.round(aqi)}` : "";
     return `<article class="city-card">
       <strong>${location.city || location.name}</strong>
-      <span class="tag ${className}">${location.status || status}${aqiLabel}</span>
-      <p>${location.message || location.recommendation || location.advice || defaultAdvice}</p>
+      <span class="tag ${className}">${status}${aqiLabel}</span>
+      <p>${defaultAdvice}</p>
     </article>`;
   }).join("");
 }
