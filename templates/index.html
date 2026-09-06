@@ -197,9 +197,14 @@ body.theme-contrast #home,body.theme-contrast .results{background:#061a3a!import
   /* Theme menu */
   #home .theme-menu {
     position: absolute;
-    top: 115px;
+    top: 72px;
     right: 16px;
     width: min(210px, calc(100vw - 32px));
+    z-index: 1000;
+  }
+
+  #home .theme-menu.show + .hero {
+    padding-top: 190px;
   }
 
   /* Results page */
