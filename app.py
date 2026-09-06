@@ -1,6 +1,12 @@
 from flask import Flask, jsonify, request, send_from_directory
 import requests
 from datetime import datetime, timezone, timedelta
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://239de76bba130e1faac9b4038938011c@o4512038924320768.ingest.de.sentry.io/4512038969671760",
+    send_default_pii=False,
+)
 
 app = Flask(__name__)
 
