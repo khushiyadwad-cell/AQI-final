@@ -488,23 +488,25 @@ body.theme-contrast #home,body.theme-contrast .results{background:#061a3a!import
 Sentry.init({
   dsn: "https://239de76bba130e1faac9b4038938011c@o4512038924320768.ingest.de.sentry.io/4512038969671760",
   sendDefaultPii: false,
-  enableLogs: true
+  enableLogs: true,
+  tracesSampleRate: 1.0
 });
 
 const sessionId = crypto.randomUUID();
 
 function trackEvent(eventName, data = {}) {
-  if (!window.Sentry) return;
+  if (!window.Sentry?.startSpan) return;
 
-  Sentry.addBreadcrumb({
-    category: "user",
-    message: eventName,
-    data: {
-      session_id: sessionId,
-      ...data
+  Sentry.startSpan(
+    {
+      name: eventName,
+      op: "ui.action",
+      attributes: {
+        ...data
+      }
     },
-    level: "info"
-  });
+    () => {}
+  );
 }
 
 const $ = id => document.getElementById(id);
