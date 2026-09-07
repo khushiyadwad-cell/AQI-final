@@ -279,15 +279,6 @@ def get_air_quality(latitude, longitude):
 
     return data
 
-    response = requests.get(
-        OPEN_METEO_AIR_QUALITY,
-        params=params,
-        timeout=10,
-    )
-    response.raise_for_status()
-
-    return response.json()
-
 
 def get_current_wind(latitude, longitude):
     """
@@ -338,29 +329,6 @@ def get_current_wind(latitude, longitude):
 
     return wind_speed, wind_direction
 
-    def value(name):
-        values = hourly.get(name) or []
-        if current_index >= len(values):
-            return None
-        return values[current_index]
-
-    return {
-        "times": times,
-        "index": current_index,
-        "aqi": value("us_aqi"),
-        "pm2_5": value("pm2_5"),
-        "pm10": value("pm10"),
-        "carbon_monoxide": value("carbon_monoxide"),
-        "nitrogen_dioxide": value("nitrogen_dioxide"),
-        "sulphur_dioxide": value("sulphur_dioxide"),
-        "ozone": value("ozone"),
-        "aqi_pm25": value("us_aqi_pm2_5"),
-        "aqi_pm10": value("us_aqi_pm10"),
-        "aqi_no2": value("us_aqi_nitrogen_dioxide"),
-        "aqi_co": value("us_aqi_carbon_monoxide"),
-        "aqi_ozone": value("us_aqi_ozone"),
-        "aqi_so2": value("us_aqi_sulphur_dioxide"),
-    }
 
 def extract_current_values(air_quality_data):
     hourly = air_quality_data.get("hourly") or {}
