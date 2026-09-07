@@ -6,6 +6,7 @@ import sentry_sdk
 sentry_sdk.init(
     dsn="https://239de76bba130e1faac9b4038938011c@o4512038924320768.ingest.de.sentry.io/4512038969671760",
     send_default_pii=False,
+    traces_sample_rate=1.0,
 )
 
 app = Flask(__name__)
