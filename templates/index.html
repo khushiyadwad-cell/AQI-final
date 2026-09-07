@@ -494,11 +494,16 @@ Sentry.init({
 const sessionId = crypto.randomUUID();
 
 function trackEvent(eventName, data = {}) {
-  if (!window.Sentry?.logger?.info) return;
+  if (!window.Sentry) return;
 
-  Sentry.logger.info(eventName, {
-    session_id: sessionId,
-    ...data
+  Sentry.addBreadcrumb({
+    category: "user",
+    message: eventName,
+    data: {
+      session_id: sessionId,
+      ...data
+    },
+    level: "info"
   });
 }
 
@@ -962,7 +967,10 @@ async function fetchAQIData() {
       `/api/air-quality?city=${encodeURIComponent(selectedCity)}`
     );
 
-    if (!response.ok) throw new Error("API error");
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API error ${response.status}: ${errorText}`);
+    }
 
     currentData = await response.json();
     renderAirData(currentData);
